@@ -36,7 +36,9 @@ function her_flare_list, tstart, tend, csv_out=csv_out
     ;         {flr-n}
     ;     ]
     ; }
-    her_temp = ssw_her_query( ssw_her_make_query( tstart, tend, /fl, search=[ 'FRM_NAME=SSW Latest Events' ], result_limit = 1000 ) ) & help, her_temp
+
+    ; her queries are limited to 1,000 and will never return more than 1,000 results, even when result_limit > 1,000.
+    her_temp = ssw_her_query( ssw_her_make_query( tstart, tend, /fl, search=[ 'FRM_NAME=SSW Latest Events' ], result_limit = 1000) ) & help, her_temp
     
     ; If no flares are found, return her_temp
     if ~is_struct(her_temp) then return, her_temp
