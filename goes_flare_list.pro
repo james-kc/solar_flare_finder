@@ -1,7 +1,22 @@
-pro goes_flare_list
-    a = ogoes()
+function goes_flare_list, tstart, tend
 
-    gev = a->get_gev('14-feb-2011', '16-feb-2011', /struct, /err)
+    a = ogoes()  ; Initialising goes object.
 
-    help, gev
+    gev = a->get_gev(tstart, tend, /struct)  ; Acquiring flare list for date range.
+
+    help, gev  ; Temp line
+    help, gev[0]  ; Temp line
+
+    ; Removing duplicates
+    dup = rem_dup(gev.gstart)
+    gev_no_dup = gev[dup]
+
+    flare_count = n_elements(gev_no_dup)  ; Number of flares observed within the time range.
+
+    for i = 0, (flare_count - 1) do print, gev_no_dup[i]  ; Printing the returned array of structs.
+
+    print, "No. flares in date range: " + string(flare_count)
+
+    return, gev_no_dup
+
 end

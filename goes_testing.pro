@@ -1,23 +1,18 @@
-pro testing
+pro goes_testing
     a = ogoes()
 
     ; gev = a->get_gev('06-aug-2023', '08-aug-2023', /struct)  ; latest X-class flare
-    gev = a->get_gev('14-feb-2011', '16-feb-2011', /struct)  ; X-class flare from lit-review
+    ; gev = a->get_gev('14-feb-2011', '16-feb-2011', /struct)  ; X-class flare from lit-review
+    gev = a->get_gev('01-may-2014', '01-jun-2014', /struct)  ; missing flare date range
+    ; gev = a->get_gev('01-jan-2000', '01-nov-2023', /struct)  ; "all time"
 
-    help, gev
-    ; tstart='07-Aug-2023 00:00'
-    ; tend='08-Aug-2023 00:00'
+    help, gev[0]
+    
+    flare_count = n_elements(gev)
 
-    ; tstart='01-Jan-2019 00:00'
-    ; tend='01-Jan-2020 00:00'
-    ; a -> set, tstart=tstart, tend=tend
+    for i = 0, (flare_count - 1) do print, gev[i]
+    print, "No. flares in date range: " + flare_count    
 
-    ; gev = a -> get_gev(tstart, tend, /struct, /class_decode)
-    ; gev = a->get_gev('23-jul-2002', '24-jul-2002', /struct, /class_decode)
-    ; gev = a -> get_gev(/show)
-    ; help, gev
-    ; if (gev eq -1) then print, "** No GOES events recorded for time period. **" $
-    ; else print, gev
     ; a -> plotman
     ; low = a -> getdata(/low)
     ; high = a -> getdata(/high)
