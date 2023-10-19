@@ -1,5 +1,14 @@
 ; Full outer join of the HEK and GOES flare lists
 
+function jul_to_geo_str, julian_date
+
+    CALDAT, julian_date, month, day, year
+    georgian_date = strtrim(year, 2) + "-" + strtrim(month, 2) + "-" + strtrim(day, 2)
+    
+    return, georgian_date
+
+end
+
 function goes_her_flare_list, gev, her
 
     ;+
@@ -58,7 +67,7 @@ function goes_her_flare_list, gev, her
 
     endfor
 
-    ; Matching goes flares to her flares
+    ; Merge data from her into the result for non-matching flares.
     for i = 0, (n_elements(her) - 1) do begin
 
         her_flare = her[i]
@@ -67,23 +76,7 @@ function goes_her_flare_list, gev, her
             (gev.class eq her_flare.goes_class) $
         )
 
-        if n_elements(matching_gev) GT 0 then begin
-
-            joined_data = { $
-                    flare_start: gev[matching_gev[0]].gstart, $
-                    flare_peak: gev[matching_gev[0]].gpeak, $
-                    flare_end: gev[matching_gev[0]].gend, $
-                    class: gev[matching_gev[0]].class, $
-                    aia_loc: her_flare.aia_loc, $
-                    aia_xcen: her_flare.aia_xcen, $
-                    aia_ycen: her_flare.aia_ycen, $
-                    gev_loc: gev[matching_gev[0]].loc, $
-                    noaa_ar: gev[matching_gev[0]].noaa_ar $
-                }
-
-            result_data = [result_data, joined_data]
-
-        endif else begin  ; This is if there is not a corresponding gev flare
+        if n_elements(matching_gev) EQ 0 then begin
 
             joined_data = { $
                     flare_start: her_flare.gev_start, $
@@ -99,7 +92,7 @@ function goes_her_flare_list, gev, her
 
             result_data = [result_data, joined_data]
 
-        endelse
+        endif
 
     endfor
 
@@ -112,6 +105,39 @@ function goes_her_flare_list, gev, her
     result = result_data_no_dup[ no_a_class_flares ]
 
     ; Print the result
-    print, result
+    return, result
 
 end
+
+
+function create_her_goes_list, tstart, tend, csv_out=csv_out
+
+    print, "Acquiring GOES flare list."
+    gev = goes_flare_list(tstart, tend)
+    print, "GOES flare list acquired."
+
+    print, "Acquiring HER flare list."
+    her = her_flare_list(tstart, tend)
+    print, "HER flare list acquired."
+
+    print, "Joining GOES and HER flare lists."
+    result = goes_her_flare_list(gev, her)
+
+    ; Writing output to csv
+    if keyword_set(csv_out) then begin
+        file_mkdir, 'flare_lists_csv'
+        filename = "flare_lists_csv/gev_her_" + jul_to_geo_str(tstart) + "_" + jul_to_geo_str(tend) + ".csv"
+        headers = tag_names(result)
+        write_csv, filename, result, header=headers
+    endif
+
+    print, "Number of GOES flares: " + strtrim(n_elements(gev), 2)
+    print, "Number of HER flares: " + strtrim(n_elements(her), 2)
+    print, "Joined number of flares: " + strtrim(n_elements(result), 2)
+
+    return, result
+
+end
+
+
+; a = create_her_goes_list('2011-01-01', '2011-02-01', /csv_out)

@@ -113,5 +113,39 @@ function goes_her_flare_list, gev, her
 
     ; Print the result
     print, result
+    return, result
 
 end
+
+
+function create_her_goes_list, tstart, tend, csv_out=csv_out
+
+    print, "Acquiring GOES flare list."
+    gev = goes_flare_list(tstart, tend)
+    print, "GOES flare list acquired."
+
+    print, "Acquiring HER flare list."
+    her = her_flare_list(tstart, tend)
+    print, "HER flare list acquired."
+
+    print, "Joining GOES and HER flare lists."
+    result = goes_her_flare_list(gev, her)
+
+    ; Writing output to csv
+    if keyword_set(csv_out) then begin
+        file_mkdir, 'flare_lists_csv'
+        filename = "flare_lists_csv/gev_her_" + string(tstart) + "_" + string(tend) + ".csv"
+        headers = tag_names(result)
+        write_csv, filename, result, header=headers
+    endif
+
+    print, "Number of GOES flares: " + strtrim(n_elements(gev), 2)
+    print, "Number of HER flares: " + strtrim(n_elements(her), 2)
+    print, "Joined number of flares: " + strtrim(n_elements(result), 2)
+
+    return, result
+
+end
+
+
+; a = create_her_goes_list('2011-01-01', '2011-02-01', /csv_out)
