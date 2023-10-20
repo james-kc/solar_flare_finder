@@ -163,7 +163,7 @@ function her_flare_list, tstart, tend, csv_out=csv_out
         write_csv, filename_fl, her_flare_list, header=headers
 
         filename_tr = "flare_lists_csv/her_empty_months" + tstart_g + "_" + tstep_g + ".csv"
-        write_csv, filename_tr, missing_time_ranges
+        if (n_elements(missing_time_ranges) gt 0) then write_csv, filename_tr, missing_time_ranges
     endif
 
     print, "No. HER flares in date range: " + string(n_elements(her_flare_list))
