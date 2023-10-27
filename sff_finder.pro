@@ -129,21 +129,30 @@ pro sff_finder, run_offline = run_offline
     ypos = gev[ i ].aia_ycen
     
  ;;  find the largest RHESSI flare during the GOES event
-    hsi_flare_id = hsi_whichflare( gev_full_time, /biggest )
-    hsi_flare = hsi_getflare( hsi_flare_id )
+    hsi_flare_id = hsi_whichflare( gev_full_time, /biggest )  ; Getting the id of largest flare in the RHESSI flare list within the gev_full_time time range
+    hsi_flare = hsi_getflare( hsi_flare_id )  ; Getting the RHESSI flare data for the flare id above
     hsi_obj -> set, obs_time_interval = gev_rise_time
     flag_changes = hsi_obj -> changes() ;; find the RHESSI flare flags within GOES rise phase
-    if ( size( flag_changes, /type ) ne 2 ) then begin
+
+
+    ; I think this section is some kind of error handling. 
+    if ( size( flag_changes, /type ) ne 2 ) then begin  ; If the flag_changes array does not contain integers
       flag = where( flag_changes.flare_flag.state eq 1 )
       if ( flag[ 0 ] ne -1 ) then begin
+        ; If the flag start_time is before the gev_rise_time[0] (gev_start), set start time to equal gev_rise_time[0] (gev_start)
+        ; If the flag end_time is before the gev_rise_time[1] (gev_peak), set end_time to equal gev_rise_time[1] (gev_peak)
         if ( flag_changes.flare_flag.start_times[ flag[ 0 ] ] lt gev_rise_time[ 0 ] ) or ( flag_changes.flare_flag.start_times[ flag[ 0 ] ] eq -1 ) $
           then flag_changes.flare_flag.start_times[ flag[ 0 ] ] = gev_rise_time[ 0 ]
         if ( flag_changes.flare_flag.end_times[ flag[ -1 ] ] gt gev_rise_time[ 1 ] ) or ( flag_changes.flare_flag.end_times[ flag[ -1 ] ] eq -1 ) $
           then flag_changes.flare_flag.end_times[ flag[ -1 ] ] = gev_rise_time[ 1 ]
+
+        ; Creating a blank float array for flag durations same size as flag array (where flag changed to 1)
         hsi_durs = dblarr( n_elements( flag ) )
+
+        ; This for loop goes through all of the flags. I think it then counts the amount of time the flags are present and adds this number to hsi_durs
         for j = 0, n_elements( flag )-1 do hsi_durs[ j ] = flag_changes.flare_flag.end_times[ flag[ j ] ] - flag_changes.flare_flag.start_times[ flag[ j ] ]
-        hsi_dur = total( hsi_durs )
-        hsi_frac = num2str( hsi_dur/gev_dur )
+        hsi_dur = total( hsi_durs )  ; Total time duration flags were present
+        hsi_frac = num2str( hsi_dur/gev_dur )  ; Fraction of flare duration for which flag was present, converted to a string
         if ( hsi_frac gt 0 ) and ( hsi_frac lt 0.01 ) then hsi_frac = 0.01
         hsi_frac_lab = strmid( hsi_frac, 0, 1 ) + strmid( hsi_frac, 2, 2 )
       endif else hsi_dur = 0.

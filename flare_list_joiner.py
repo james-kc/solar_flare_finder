@@ -1,5 +1,6 @@
 import pandas as pd
 from pandas import DataFrame
+import sys
 
 def goes_class_ranking_val(goes_class: str) -> float:
 
@@ -132,12 +133,45 @@ def create_her_goes_list(
         ]]
     )
 
-her_filename = "flare_lists_csv/her_2010-12-31_2011-12-31.csv"
-gev_filename = "flare_lists_csv/gev_2011-01-01_2012-01-01.csv"
 
-her = pd.read_csv(her_filename)
-gev = pd.read_csv(gev_filename)
+if __name__ == "__main__":
 
-result = create_her_goes_list(her, gev)
+    her_filepath = sys.argv[1]
+    gev_filepath = sys.argv[2]
 
-result.to_csv("flare_lists_csv/gev_her_python.csv")
+    her_filename = her_filepath.rsplit('/', 1)[-1]
+    gev_filename = gev_filepath.rsplit('/', 1)[-1]
+
+    result_filename = f"joined_{her_filename[:-4]}+{gev_filename}"
+    output_filepath = f"flare_lists_csv/{result_filename}"
+
+    try:
+        verbose = sys.argv[3]
+        if verbose == 'verbose':
+            verbose = True
+    except:
+        verbose = False
+
+    if verbose:
+        print(f"HER filepath: {her_filepath}")
+        print(f"GEV filepath: {gev_filepath}")
+        print(f"Output filepath: {output_filepath}")
+
+    her = pd.read_csv(her_filepath)
+
+    if verbose:
+        print("HER list loaded.")
+
+    gev = pd.read_csv(gev_filepath)
+
+    if verbose:
+        print("HER list loaded.")
+
+    if verbose:
+        print("Joining lists...")
+
+    result = create_her_goes_list(her, gev)
+    result.to_csv(output_filepath)
+
+    if verbose:
+        print(f"Joined and output to {output_filepath}")

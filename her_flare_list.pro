@@ -17,7 +17,7 @@ function her_flare_list_query, tstart, tend, csv_out=csv_out
     ; tend = '01-jan-2013'
 
     ; tstart = '01-jul-2013'
-    ; tend = '01-dec-2presentb-2015'
+    ; tend = '01-dec-2015'
     ; tend = '01-mar-2015'
 
     ; tstart = '01-mar-2016'
@@ -155,8 +155,13 @@ function her_flare_list, tstart, tend, csv_out=csv_out
     ; Repeating until tstep_last is greater than tend meaning the previously completed query searched for flares up to or past tend date.    
     endrep until (tstep ge tend)
 
+    print, "No. HER flares in date range: " + string(n_elements(her_flare_list))
+    print, "Missing time ranges:"
+    print, missing_time_ranges
+
     ; Writing output to csv
     if keyword_set(csv_out) then begin
+
         file_mkdir, 'flare_lists_csv'
         filename_fl = "flare_lists_csv/her_" + tstart_g + "_" + tstep_g + ".csv"
         headers = tag_names(her_flare_list)
@@ -164,12 +169,12 @@ function her_flare_list, tstart, tend, csv_out=csv_out
 
         filename_tr = "flare_lists_csv/her_empty_months" + tstart_g + "_" + tstep_g + ".csv"
         if (n_elements(missing_time_ranges) gt 0) then write_csv, filename_tr, missing_time_ranges
-    endif
 
-    print, "No. HER flares in date range: " + string(n_elements(her_flare_list))
-    print, "Missing time ranges:"
-    print, missing_time_ranges
+        return, { $
+            data:her_flare_list, $
+            filename: filename_fl $
+        }
 
-    return, her_flare_list
+    endif else return, her_flare_list    
 
 end

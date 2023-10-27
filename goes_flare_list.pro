@@ -2,6 +2,8 @@ function goes_flare_list, tstart, tend, csv_out=csv_out
 
     a = ogoes()  ; Initialising goes object.
 
+    print, tstart, tend
+
     gev = a->get_gev(tstart, tend, /struct)  ; Acquiring flare list for date range.
 
     ; help, gev  ; Temp line
@@ -23,12 +25,17 @@ function goes_flare_list, tstart, tend, csv_out=csv_out
 
     ; Writing output to csv
     if keyword_set(csv_out) then begin
+
         file_mkdir, 'flare_lists_csv'
         filename = "flare_lists_csv/gev_" + tstart + "_" + tend + ".csv"
         headers = tag_names(gev_result)
         write_csv, filename, gev_result, header=headers
-    endif
 
-    return, gev_result
+        return, { $
+            data:gev_result, $
+            filename: filename $
+        }
+
+    endif else return, gev_result
 
 end
