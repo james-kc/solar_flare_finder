@@ -1,4 +1,9 @@
-function rsi_observed_stats, flare_start, flare_peak, flare_end, debug=debug
+function rsi_observed_stats, $
+    flare_start, $
+    flare_peak, $
+    flare_end, $
+    debug=debug, $
+    verbose=verbose
     ;+ This function accepts flare_start, flare_peak and flare_end as arguments,
     ;  returning a struct containing information about whether RHESSI was
     ;  observing the sun during the solar flare.
@@ -13,8 +18,9 @@ function rsi_observed_stats, flare_start, flare_peak, flare_end, debug=debug
     ; rsi_observed_stats('2010-06-11 23:56:00', '2010-06-12 00:02:00', '2010-06-12 00:04:00')
     ; rsi_observed_stats('2010-06-12 00:30:00', '2010-06-12 00:33:00', '2010-06-12 00:33:00')
     ; rsi_observed_stats('2010-06-13 05:30:00', '2010-06-13 05:39:00', '2010-06-13 05:44:00')
+    ; rsi_observed_stats('2011-04-11 23:40:00', '2011-04-11 00:00:00', '2011-04-12 00:03:00')
 
-    ;+ SETTING FLARE TIME RANGES -;
+    ;+ HANDLING EXCEPTIONS -;
     ; Handling case where flare_start = flare_peak
     if (flare_start eq flare_peak) then begin
 
@@ -22,6 +28,7 @@ function rsi_observed_stats, flare_start, flare_peak, flare_end, debug=debug
         flare_start = anytim(anytim(flare_start) - 60, /vms)
 
     endif
+
     ; Handling case where flare_peak = flare_end
     if (flare_peak eq flare_end) then begin
 
@@ -29,7 +36,24 @@ function rsi_observed_stats, flare_start, flare_peak, flare_end, debug=debug
         flare_end = anytim(anytim(flare_end) + 60, /vms)
 
     endif
+    
+    ; Handling case where (flare_start < flare_peak < flare_end) = False
+    if ~( $
+        (anytim(flare_start) lt anytim(flare_peak)) and $
+        (anytim(flare_peak) lt anytim(flare_end)) $
+    ) then begin
 
+        observed = byte(-1)
+        rsi_flare_triggered = byte(-1)
+        frac_obs = -1.0
+        frac_obs_rise = -1.0
+        frac_obs_fall = -1.0
+
+        goto, to_return
+
+    endif
+
+    ;+ SETTING FLARE TIME RANGES -;
     time_range = [flare_start, flare_end]
     that_day = [STRMID(time_range[0], 0, 10), STRMID(time_range[1], 0, 10) + " 23:59:59"]  ; Use this time range to plot data for the entire day flare occured on.
 
@@ -79,16 +103,18 @@ function rsi_observed_stats, flare_start, flare_peak, flare_end, debug=debug
         endif
 
         ;+ CALCULATING STATS -;
-        ; Calculating the number of elements equal to:
-        ; - one minute
-        elements_to_one_min = ceil(60 / flag_info.time_intv)
-        ; - flare_start to flare_peak time
+        ; Calculating the number of elements between flare_start and flare_peak
+        ; times.
         seconds_to_flare_peak = anytim(flare_peak) - anytim(flare_start)
         elements_to_flare_peak = ceil(seconds_to_flare_peak / flag_info.time_intv)
-        ; - 1 min before flare peak
-        element_flare_peak_minus_min = elements_to_flare_peak - elements_to_one_min
-        ; - 1 min after flare peak
-        element_flare_peak_plus_min = elements_to_flare_peak + elements_to_one_min
+
+        if keyword_set(verbose) then begin
+            print, `Flare Start: ${flare_start}`
+            print, `Flare Peak: ${flare_peak}`
+            print, `Flare End: ${flare_end}`
+            print, `Elements to flare peak: ${elements_to_flare_peak}`
+            print, `Total Number of Elements: ${n_elements(observed_flag)}`
+        endif
 
         observed = ~array_equal(observed_flag, 0)  ; Was RHESSI observing the sun at any time during the flare?
         rsi_flare_triggered = ~array_equal(flare_flag, 0)  ; Did RHESSI detect the flare (flare trigger triggered)?

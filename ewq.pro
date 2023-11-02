@@ -22,7 +22,7 @@ pro ewq
 
     endelse
 
-    joined_flare_list = joined_flare_list[100:149]  ; Temp shortening of flare list
+    ; joined_flare_list = joined_flare_list[1748:1770]  ; Temp shortening of flare list
 
     ; help, joined_flare_list[0]
 
@@ -30,11 +30,19 @@ pro ewq
 
     foreach flare, joined_flare_list do begin
 
+        print, ""
+        print, `*** BEGINNING FLARE ${flare.index} ***`
+        print, ""
+
         rsi_output = rsi_observed_stats( $
             flare.flare_start, $
             flare.flare_peak, $
             flare.flare_end $
         )
+
+        print, ""
+        print, `*** FLARE ${flare.index} COMPLETE ***`
+        print, ""
 
         ; help, create_struct(flare, rsi_output)  ; Debugging struct types
         output = [output, create_struct(flare, rsi_output)]
