@@ -1,3 +1,60 @@
+;+
+; Name: rsi_observed_stats
+; 
+; Purpose:  This function accepts flare_start, flare_peak and flare_end as
+;           arguments, returning a struct containing information about whether
+;           RHESSI was observing the sun during the solar flare.
+; 
+; Calling sequence: rsi_observed_stats(flare_start, flare_peak, flare_end, $
+;                   /debug, /verbose)
+; 
+; Input:
+;   flare_start -   Time at which the flare started, e.g. '2023-10-01 14:44:00'
+;   flare_peak -    Time at which the flare peaked, e.g. '2023-10-01 14:47:00'
+;   flare_end -     Time at which the flare ended, e.g. '2023-10-01 14:50:00'
+;          
+; Input Keywords:
+;   debug -     Plots RHESSI data and flags for debugging purposes.
+;   verbose -   Prints flare start, peak and end times as well as array element
+;               information.
+;
+; Returns struct:
+;   {
+;       observed,               ; 1:        RHESSI observing sun during flare.
+;                               ; 0:        RHESSI not observing sun during
+;                               ;           flare.
+;                               ; 255:      Malformed flare_start -> flare_peak
+;                               ;           -> flare_end sequence.
+;       rsi_flare_triggered,    ; 1:        Flare present on RHESSI flare list.
+;                               ; 0:        Flare not present on RHessi flare
+;                               ;           list.
+;                               ; 255:      Malformed flare_start -> flare_peak
+;                               ;           -> flare_end sequence.
+;       frac_obs,               ; 0.0-1.0:  Fraction of the entire flare
+;                               ;           observed by RHESSI.
+;                               ; -1:       Malformed flare_start -> flare_peak
+;                               ;           -> flare_end sequence.
+;       frac_obs_rise,          ; 0.0-1.0:  Fraction of the flare rise phase
+;                               ;           observed by RHESSI.
+;                               ; -1:       Malformed flare_start -> flare_peak
+;                               ;           -> flare_end sequence.
+;       frac_obs_fall           ; 0.0-1.0:  Fraction of the flare fall phase
+;                               ;           observed by RHESSI.
+;                               ; -1:       Malformed flare_start -> flare_peak
+;                               ;           -> flare_end sequence.
+;   }
+;   
+; Examples:
+;   rsi_observed_stats('2017-09-10 15:35:00', '2017-09-10 16:06:00', $
+;   '2017-09-10 16:31:00')
+;
+;   rsi_observed_stats('2010-06-13 05:30:00', '2010-06-13 05:39:00', $
+;   '2010-06-13 05:44:00')
+;   
+; Written: James Kavanagh-Cranston, 02-Nov-2023
+;
+;-
+
 function rsi_observed_stats, $
     flare_start, $
     flare_peak, $

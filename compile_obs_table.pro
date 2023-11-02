@@ -1,3 +1,18 @@
+;+
+; Name: compile_obs_table
+; 
+; Purpose:  This function takes the joined_flare_list and determines if
+;           particular solar observing instruments were observing the sun
+;           at any time during the solar flare.
+; 
+; Calling sequence: compile_obs_table
+;   
+; Output:   instr_observed_flare_list.csv
+;   
+; Written: James Kavanagh-Cranston, 02-Nov-2023
+;
+;-
+
 pro compile_obs_table
 
     save_filename = 'joined_flare_list.sav'
