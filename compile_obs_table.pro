@@ -1,4 +1,4 @@
-pro ewq
+pro compile_obs_table
 
     save_filename = 'joined_flare_list.sav'
 
@@ -23,8 +23,6 @@ pro ewq
     endelse
 
     ; joined_flare_list = joined_flare_list[1748:1770]  ; Temp shortening of flare list
-
-    ; help, joined_flare_list[0]
 
     output = []
 
