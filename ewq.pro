@@ -10,6 +10,30 @@
 ; Input Keywords:
 ;
 ; Returns struct:
+;   {
+;       observed,               ; 1:        FERMI observing sun during flare.
+;                               ; 0:        FERMI not observing sun during
+;                               ;           flare.
+;                               ; 255:      Malformed flare_start -> flare_peak
+;                               ;           -> flare_end sequence.
+;       rsi_flare_triggered,    ; 1:        Flare present on FERMI flare list.
+;                               ; 0:        Flare not present on FERMI flare
+;                               ;           list.
+;                               ; 255:      Malformed flare_start -> flare_peak
+;                               ;           -> flare_end sequence.
+;       frac_obs,               ; 0.0-1.0:  Fraction of the entire flare
+;                               ;           observed by FERMI.
+;                               ; -1:       Malformed flare_start -> flare_peak
+;                               ;           -> flare_end sequence.
+;       frac_obs_rise,          ; 0.0-1.0:  Fraction of the flare rise phase
+;                               ;           observed by FERMI.
+;                               ; -1:       Malformed flare_start -> flare_peak
+;                               ;           -> flare_end sequence.
+;       frac_obs_fall           ; 0.0-1.0:  Fraction of the flare fall phase
+;                               ;           observed by FERMI.
+;                               ; -1:       Malformed flare_start -> flare_peak
+;                               ;           -> flare_end sequence.
+;   }
 ;   
 ; Examples:
 ;   
@@ -25,8 +49,47 @@ pro ewq;, flare_start, flare_peak, flare_end
 
     time_range = [anytim(flare_start), anytim(flare_end)]
 
-    saa_flag = fermi_get_gti(time_range)
-    eclipse_flag = fermi_get_dn(time_range)
+    save_filename = 'ewq.sav'
 
-    foreach time, saa_flag do print, anytim(time, /vms)
+    ; Attempting to restore from .sav file
+    if file_test(save_filename) then begin
+
+        print, "Restoring from .sav file."
+        restore, save_filename
+        print, "Restore complete."
+
+    endif else begin
+
+        ;+ ACQUIRING SAA & ECLIPSE TIMES -;
+        non_saa_times = fermi_get_gti(time_range)
+        non_eclipse_times = fermi_get_dn(time_range)
+        observed_times = [[non_saa_times], [non_eclipse_times]]
+
+        ;+ ACQUIRING GOOD DATA -;
+        gbm_find_data, date=time_range, dir="~/hessi", file=file
+        
+        save, filename=save_filename, observed_times, file
+
+    endelse
+
+    help, observed_times
+
+    ; print, anytim(observed_times, /vms)
+
+    help, file
+
+    ; for i = 0, 24 do print, (observed_times[0, i+1] - observed_times[1, i]) / 60.
+    ; i = 20
+    ; print, observed_times[0, i], observed_times[1, i]
+
+
+    ; observed_times_dims = size(observed_times, /dimensions)
+
+    ; for i = 0, (observed_times_dims[1] - 1) do begin
+
+    ;     print, anytim(observed_times[0, i], /vms), " -> ", anytim(observed_times[1, i], /vms), " Valid: ", anytim(observed_times[0, i]) lt anytim(observed_times[1, i])
+
+    ; endfor
+
+    ; lat_maxlike_plot, time_range
 end
