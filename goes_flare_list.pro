@@ -1,3 +1,26 @@
+;+
+; Name: goes_flare_list
+; 
+; Purpose:  
+; 
+; Calling sequence: goes_flare_list(tstart, tend, csv_out=csv_out)
+; 
+; Input:
+;   tstart -
+;   tend -
+;          
+; Input Keywords:
+;   csv_out -     
+;
+; Returns:
+;   
+; Examples:
+;   goes_flare_list('2017-09-10', '2017-09-11')
+;   
+; Written: James Kavanagh-Cranston, 04-Nov-2023
+;
+;-
+
 function goes_flare_list, tstart, tend, csv_out=csv_out
 
     a = ogoes()  ; Initialising goes object.
