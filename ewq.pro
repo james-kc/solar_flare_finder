@@ -48,6 +48,7 @@ pro ewq;, flare_start, flare_peak, flare_end
     flare_end = '2017-09-10 16:31:00'
 
     time_range = [anytim(flare_start), anytim(flare_end)]
+    time_range = '2017-09-10'
 
     save_filename = 'ewq.sav'
 
@@ -72,11 +73,12 @@ pro ewq;, flare_start, flare_peak, flare_end
 
     endelse
 
-    help, observed_times
+    gbm_qlook, file, data, synrate
 
-    ; print, anytim(observed_times, /vms)
 
-    help, file
+    
+    ; timstr = data.utm
+    ; extract_fermi_gbm_ql_data, file[0:-2]
 
     ; for i = 0, 24 do print, (observed_times[0, i+1] - observed_times[1, i]) / 60.
     ; i = 20
