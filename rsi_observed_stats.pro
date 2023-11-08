@@ -81,6 +81,12 @@ function rsi_observed_stats, $
     ; rsi_observed_stats('2010-06-12 00:30:00', '2010-06-12 00:57:00', '2010-06-12 01:02:00')
     ; rsi_observed_stats('2014-06-03 03:58:00', '2014-06-03 04:09:00', '2014-06-03 04:17:00')
     ; rsi_observed_stats('2010-06-13 05:30:00', '2010-06-13 05:39:00', '2010-06-13 05:44:00')
+
+    ; rsi_observed_stats('2012-09-17 11:35:00', '2012-09-17 11:46:00', '2012-09-17 12:01:00')
+    ; rsi_observed_stats('2014-01-31 04:46:00', '2014-01-31 05:05:00', '2014-01-31 05:17:00')
+    ; rsi_observed_stats('2017-09-20 02:51:00', '2017-09-20 02:57:00', '2017-09-20 03:21:00')
+
+
     
 
 
@@ -142,7 +148,7 @@ function rsi_observed_stats, $
     observed = ~array_equal(hsi_data.countrate, 0)  ; Checking if any data exists for time_range
 
     ;+ PLOTS FOR DEBUGGING -;
-    if keyword_set(debug) then hsi_obj -> plotman
+    if keyword_set(debug) then hsi_obj -> plotman, /corrected
 
     ; If data exists within time_range, continue to check if RHESSI was observing the sun during this time.
     if (observed eq 1) then begin
@@ -198,6 +204,7 @@ function rsi_observed_stats, $
     endelse
 
     to_return:
+    ; if (frac_obs_rise lt 0.2) then observed = 0
 
     return, {$
         observed: observed, $

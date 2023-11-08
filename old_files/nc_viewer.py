@@ -10,7 +10,7 @@ def flatten_list(matrix):
     
     return flat_list
 
-folder = "2014_may/"
+folder = "downloaded_files/"
 nc_files = [folder + file for file in os.listdir(folder)]
 
 read_files = [nc.Dataset(fn) for fn in nc_files]
@@ -19,11 +19,24 @@ pprint(read_files[0].variables.keys())
 
 flare_class = [file.variables['flare_class'][:].tolist() for file in read_files]
 flare_status = [file.variables['status'][:].tolist() for file in read_files]
+flare_times = [file.variables['time'][:].tolist() for file in read_files]
 
 flares = zip(flatten_list(flare_class), flatten_list(flare_status))
 flares = list(flares)
 
 pprint(flares)
+
+
+flare_status = np.array(flatten_list(flare_status))
+pprint(flare_status[flare_status == "EVENT_START"])
+
+flare_times = np.array(flatten_list(flare_times))
+pprint(flare_times[flare_status == "EVENT_START"])
+
+# print(read_files[0].variables['status'][:])
+
+
+# pprint(flatten_list(flare_times))
 
 # for index, i in enumerate(flares):
 #     # print(index, i)

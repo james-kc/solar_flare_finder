@@ -43,14 +43,17 @@
 
 pro ewq;, flare_start, flare_peak, flare_end
 
-    flare_start = '2017-09-10 15:35:00'
-    flare_peak = '2017-09-10 16:06:00'
-    flare_end = '2017-09-10 16:31:00'
+    ; flare_spe = ['2017-09-10 15:35:00', '2017-09-10 16:06:00', '2017-09-10 16:31:00']
+    flare_spe = ['2010-06-13 05:30:00', '2010-06-13 05:39:00', '2010-06-13 05:44:00']
+    ; flare_spe = ['2017-09-20 02:51:00', '2017-09-20 02:57:00', '2017-09-20 03:21:00']
+
+    flare_start = flare_spe[0]
+    flare_peak = flare_spe[1]
+    flare_end = flare_spe[2]
 
     time_range = [anytim(flare_start), anytim(flare_end)]
-    time_range = '2017-09-10'
 
-    save_filename = 'ewq.sav'
+    save_filename = `${flare_start}_${flare_end}.sav`
 
     ; Attempting to restore from .sav file
     if file_test(save_filename) then begin
@@ -73,25 +76,26 @@ pro ewq;, flare_start, flare_peak, flare_end
 
     endelse
 
-    gbm_qlook, file, data, synrate
+    ;+ PLOTTING RHESSI LIGHT CURVES -;
+    hsi_server
+    hsi_obj = hsi_obs_summary(obs_time_interval = time_range)
+    hsi_obj -> plotman, /corrected
 
+    ;+ PLOTTING FERMI LIGHT CURVES -;
+    o = ospex(spex_specfile=file)
 
-    
-    ; timstr = data.utm
-    ; extract_fermi_gbm_ql_data, file[0:-2]
+    peep_file = file[8]
+    peep_file = file[7]
 
-    ; for i = 0, 24 do print, (observed_times[0, i+1] - observed_times[1, i]) / 60.
-    ; i = 20
-    ; print, observed_times[0, i], observed_times[1, i]
+    print, peep_file
+    o -> set, spex_specfile=peep_file
+    o -> plot_time, spex_units='flux'
 
+    ; foreach f, file do begin
 
-    ; observed_times_dims = size(observed_times, /dimensions)
+    ;     o -> set, spex_specfile=f
+    ;     o -> plot_time, spex_units='flux'
 
-    ; for i = 0, (observed_times_dims[1] - 1) do begin
+    ; endforeach
 
-    ;     print, anytim(observed_times[0, i], /vms), " -> ", anytim(observed_times[1, i], /vms), " Valid: ", anytim(observed_times[0, i]) lt anytim(observed_times[1, i])
-
-    ; endfor
-
-    ; lat_maxlike_plot, time_range
 end
