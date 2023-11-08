@@ -67,7 +67,7 @@ pro ewq;, flare_start, flare_peak, flare_end
         ;+ ACQUIRING SAA & ECLIPSE TIMES -;
         non_saa_times = fermi_get_gti(time_range)
         non_eclipse_times = fermi_get_dn(time_range)
-        observed_times = [[non_saa_times], [non_eclipse_times]]
+        observed_times = interval_intersection(non_saa_times, non_eclipse_times)
 
         ;+ ACQUIRING GOOD DATA -;
         gbm_find_data, date=time_range, dir="~/hessi", file=file
@@ -76,26 +76,33 @@ pro ewq;, flare_start, flare_peak, flare_end
 
     endelse
 
+    flare_interval = [flare_start, flare_end]
+    rise_interval = [flare_start, flare_peak]
+    fall_interval = [flare_peak, flare_end]
+
+    intervals = [ $
+        [flare_interval], $
+        [rise_interval], $
+        [fall_interval] $
+    ]
+
+    help, observed_times
+    obs = interval_intersection(intervals, observed_times)
+    help, obs
+
     ;+ PLOTTING RHESSI LIGHT CURVES -;
-    hsi_server
-    hsi_obj = hsi_obs_summary(obs_time_interval = time_range)
-    hsi_obj -> plotman, /corrected
+    ; hsi_server
+    ; hsi_obj = hsi_obs_summary(obs_time_interval = time_range)
+    ; hsi_obj -> plotman, /corrected
 
     ;+ PLOTTING FERMI LIGHT CURVES -;
-    o = ospex(spex_specfile=file)
+    ; o = ospex(spex_specfile=file)
 
-    peep_file = file[8]
-    peep_file = file[7]
+    ; peep_file = file[8]
+    ; peep_file = file[7]
 
-    print, peep_file
-    o -> set, spex_specfile=peep_file
-    o -> plot_time, spex_units='flux'
-
-    ; foreach f, file do begin
-
-    ;     o -> set, spex_specfile=f
-    ;     o -> plot_time, spex_units='flux'
-
-    ; endforeach
+    ; print, peep_file
+    ; o -> set, spex_specfile=peep_file
+    ; o -> plot_time, spex_units='flux'
 
 end

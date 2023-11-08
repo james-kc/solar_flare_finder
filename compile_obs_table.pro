@@ -37,7 +37,7 @@ pro compile_obs_table
 
     endelse
 
-    ; joined_flare_list = joined_flare_list[1748:1770]  ; Temp shortening of flare list
+    joined_flare_list = joined_flare_list[1748:1770]  ; Temp shortening of flare list
 
     output = []
 
@@ -67,6 +67,8 @@ pro compile_obs_table
         print, read_row
 
     endforeach
+
+    print, tag_names(output)
 
     write_csv, 'instr_observed_flare_list.csv', output, header=tag_names(output)
 

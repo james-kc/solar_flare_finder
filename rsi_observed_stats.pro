@@ -20,7 +20,7 @@
 ;
 ; Returns struct:
 ;   {
-;       observed,               ; 1:        RHESSI observing sun during flare.
+;       rsi_observed,               ; 1:        RHESSI observing sun during flare.
 ;                               ; 0:        RHESSI not observing sun during
 ;                               ;           flare.
 ;                               ; 255:      Malformed flare_start -> flare_peak
@@ -30,15 +30,15 @@
 ;                               ;           list.
 ;                               ; 255:      Malformed flare_start -> flare_peak
 ;                               ;           -> flare_end sequence.
-;       frac_obs,               ; 0.0-1.0:  Fraction of the entire flare
+;       rsi_frac_obs,               ; 0.0-1.0:  Fraction of the entire flare
 ;                               ;           observed by RHESSI.
 ;                               ; -1:       Malformed flare_start -> flare_peak
 ;                               ;           -> flare_end sequence.
-;       frac_obs_rise,          ; 0.0-1.0:  Fraction of the flare rise phase
+;       rsi_frac_obs_rise,          ; 0.0-1.0:  Fraction of the flare rise phase
 ;                               ;           observed by RHESSI.
 ;                               ; -1:       Malformed flare_start -> flare_peak
 ;                               ;           -> flare_end sequence.
-;       frac_obs_fall           ; 0.0-1.0:  Fraction of the flare fall phase
+;       rsi_frac_obs_fall           ; 0.0-1.0:  Fraction of the flare fall phase
 ;                               ;           observed by RHESSI.
 ;                               ; -1:       Malformed flare_start -> flare_peak
 ;                               ;           -> flare_end sequence.
@@ -114,11 +114,11 @@ function rsi_observed_stats, $
         (anytim(flare_peak) lt anytim(flare_end)) $
     ) then begin
 
-        observed = byte(-1)
+        rsi_observed = byte(-1)
         rsi_flare_triggered = byte(-1)
-        frac_obs = -1.0
-        frac_obs_rise = -1.0
-        frac_obs_fall = -1.0
+        rsi_frac_obs = -1.0
+        rsi_frac_obs_rise = -1.0
+        rsi_frac_obs_fall = -1.0
 
         goto, to_return
 
@@ -135,23 +135,23 @@ function rsi_observed_stats, $
 
     if ~tag_exist(hsi_data, "countrate") then begin
 
-        observed = byte(0)
+        rsi_observed = byte(0)
         rsi_flare_triggered = byte(0)
-        frac_obs = 0.0
-        frac_obs_rise = 0.0
-        frac_obs_fall = 0.0
+        rsi_frac_obs = 0.0
+        rsi_frac_obs_rise = 0.0
+        rsi_frac_obs_fall = 0.0
 
         goto, to_return
 
     endif
 
-    observed = ~array_equal(hsi_data.countrate, 0)  ; Checking if any data exists for time_range
+    rsi_observed = ~array_equal(hsi_data.countrate, 0)  ; Checking if any data exists for time_range
 
     ;+ PLOTS FOR DEBUGGING -;
     if keyword_set(debug) then hsi_obj -> plotman, /corrected
 
     ; If data exists within time_range, continue to check if RHESSI was observing the sun during this time.
-    if (observed eq 1) then begin
+    if (rsi_observed eq 1) then begin
 
         ;+ FLAGS -;
         flag_obj = hsi_obs_summ_flag(obs_time_interval = time_range)
@@ -187,31 +187,31 @@ function rsi_observed_stats, $
             print, `Total Number of Elements: ${n_elements(observed_flag)}`
         endif
 
-        observed = ~array_equal(observed_flag, 0)  ; Was RHESSI observing the sun at any time during the flare?
+        rsi_observed = ~array_equal(observed_flag, 0)  ; Was RHESSI observing the sun at any time during the flare?
         rsi_flare_triggered = ~array_equal(flare_flag, 0)  ; Did RHESSI detect the flare (flare trigger triggered)?
-        frac_obs = total(observed_flag) / n_elements(observed_flag)  ; Fraction of time_range observed by RHESSI.
+        rsi_frac_obs = total(observed_flag) / n_elements(observed_flag)  ; Fraction of time_range observed by RHESSI.
 
-        frac_obs_rise = total(observed_flag[0:elements_to_flare_peak]) / n_elements(observed_flag[0:elements_to_flare_peak])
-        frac_obs_fall = total(observed_flag[elements_to_flare_peak:-1]) / n_elements(observed_flag[elements_to_flare_peak:-1])
+        rsi_frac_obs_rise = total(observed_flag[0:elements_to_flare_peak]) / n_elements(observed_flag[0:elements_to_flare_peak])
+        rsi_frac_obs_fall = total(observed_flag[elements_to_flare_peak:-1]) / n_elements(observed_flag[elements_to_flare_peak:-1])
 
     endif else begin
 
         rsi_flare_triggered = byte(0)
-        frac_obs = 0.0
-        frac_obs_rise = 0.0
-        frac_obs_fall = 0.0
+        rsi_frac_obs = 0.0
+        rsi_frac_obs_rise = 0.0
+        rsi_frac_obs_fall = 0.0
 
     endelse
 
     to_return:
-    ; if (frac_obs_rise lt 0.2) then observed = 0
+    ; if (rsi_frac_obs_rise lt 0.2) then rsi_observed = 0
 
     return, {$
-        observed: observed, $
+        rsi_observed: rsi_observed, $
         rsi_flare_triggered: rsi_flare_triggered, $
-        frac_obs: frac_obs, $
-        frac_obs_rise: frac_obs_rise, $
-        frac_obs_fall: frac_obs_fall $
+        rsi_frac_obs: rsi_frac_obs, $
+        rsi_frac_obs_rise: rsi_frac_obs_rise, $
+        rsi_frac_obs_fall: rsi_frac_obs_fall $
     }
 
 end
