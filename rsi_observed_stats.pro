@@ -20,7 +20,7 @@
 ;
 ; Returns struct:
 ;   {
-;       rsi_observed,               ; 1:        RHESSI observing sun during flare.
+;       rsi_observed,           ; 1:        RHESSI observing sun during flare.
 ;                               ; 0:        RHESSI not observing sun during
 ;                               ;           flare.
 ;                               ; 255:      Malformed flare_start -> flare_peak
