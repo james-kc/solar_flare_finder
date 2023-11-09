@@ -53,12 +53,21 @@ pro compile_obs_table
             flare.flare_end $
         )
 
+        fermi_output = fermi_observed_stats( $
+            flare.flare_start, $
+            flare.flare_peak, $
+            flare.flare_end $
+        )
+
         print, ""
         print, `*** FLARE ${flare.index} COMPLETE ***`
         print, ""
 
-        ; help, create_struct(flare, rsi_output)  ; Debugging struct types
-        output = [output, create_struct(flare, rsi_output)]
+        obs_cols = create_struct(flare, rsi_output)
+        obs_cols = create_struct(obs_cols, fermi_output)
+
+        ; help, obs_cols  ; Debugging struct types
+        output = [output, obs_cols]
 
     endforeach
     

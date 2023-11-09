@@ -61,10 +61,6 @@ function rsi_observed_stats, $
     flare_end, $
     debug=debug, $
     verbose=verbose
-    ;+ This function accepts flare_start, flare_peak and flare_end as arguments,
-    ;  returning a struct containing information about whether RHESSI was
-    ;  observing the sun during the solar flare.
-    ;-
 
     ; rsi_observed_stats('2017-09-10 15:35:00', '2017-09-10 16:06:00', '2017-09-10 16:31:00')
     ; rsi_observed_stats('2010-04-13 04:39:00', '2010-04-13 04:43:00', '2010-04-13 04:49:00')
@@ -85,9 +81,6 @@ function rsi_observed_stats, $
     ; rsi_observed_stats('2012-09-17 11:35:00', '2012-09-17 11:46:00', '2012-09-17 12:01:00')
     ; rsi_observed_stats('2014-01-31 04:46:00', '2014-01-31 05:05:00', '2014-01-31 05:17:00')
     ; rsi_observed_stats('2017-09-20 02:51:00', '2017-09-20 02:57:00', '2017-09-20 03:21:00')
-
-
-    
 
 
 
@@ -114,6 +107,7 @@ function rsi_observed_stats, $
         (anytim(flare_peak) lt anytim(flare_end)) $
     ) then begin
 
+        ; Return an 'error' struct
         rsi_observed = byte(-1)
         rsi_flare_triggered = byte(-1)
         rsi_frac_obs = -1.0
@@ -204,7 +198,6 @@ function rsi_observed_stats, $
     endelse
 
     to_return:
-    ; if (rsi_frac_obs_rise lt 0.2) then rsi_observed = 0
 
     return, {$
         rsi_observed: rsi_observed, $
