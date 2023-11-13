@@ -58,7 +58,8 @@ function fermi_observed_stats, $
     flare_start, $
     flare_peak, $
     flare_end, $
-    verbose=verbose
+    verbose=verbose, $
+    debug=debug
 
     ;+ SETTING FLARE TIME RANGES -;
     time_range = [anytim(flare_start), anytim(flare_end)]
@@ -109,7 +110,8 @@ function fermi_observed_stats, $
     flare_day_start = STRMID(flare_start, 0, 10)
     flare_day_start = STRMID(flare_end, 0, 10)
 
-    save_filename = `fermi_sav_files/${flare_day_start}_${flare_day_start}.sav`
+    ; save_filename = `fermi_sav_files/${flare_day_start}_${flare_day_start}.sav`
+    save_filename = 'fermi_sav_files/2019-05-30_2019-05-30.sav'  ; Full time range
 
     ; Attempting to restore from .sav file
     if file_test(save_filename) then begin
@@ -147,20 +149,27 @@ function fermi_observed_stats, $
 
     ;+ DETERMINING OBSERVATION FRACTIONS -;
     if fermi_observed then begin
-        fermi_frac_obs = (flare_observed_interval[1] - flare_observed_interval[0]) / flare_duration
+        fermi_frac_obs = total(flare_observed_interval[1,*] - flare_observed_interval[0,*]) / flare_duration
         fermi_frac_obs = float(fermi_frac_obs)
     endif else fermi_frac_obs = float(0.0)
 
     if rise_observed then begin
-        fermi_frac_obs_rise = (rise_observed_interval[1] - rise_observed_interval[0]) / rise_duration
+        fermi_frac_obs_rise = total(rise_observed_interval[1,*] - rise_observed_interval[0,*]) / rise_duration
         fermi_frac_obs_rise = float(fermi_frac_obs_rise)
     endif else fermi_frac_obs_rise = float(0.0)
 
     if fall_observed then begin
-        fermi_frac_obs_fall = (fall_observed_interval[1] - fall_observed_interval[0]) / fall_duration
+        fermi_frac_obs_fall = total(fall_observed_interval[1,*] - fall_observed_interval[0,*]) / fall_duration
         fermi_frac_obs_fall = float(fermi_frac_obs_fall)
     endif else fermi_frac_obs_fall = float(0.0)
-    
+
+    if keyword_set(debug) then begin
+        ;+ PLOTTING FERMI LIGHT CURVES -;
+        gbm_find_data,date=time_range, pattern='cspec', det='n4', /copy, file=file, dir='~/spex'
+        o = ospex(spex_specfile=file)
+        o -> plot_time, spex_units='flux'
+    endif
+
     to_return:
 
     return, {$

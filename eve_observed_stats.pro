@@ -46,6 +46,7 @@
 ;-
 function eve_observed_stats, flare_start, flare_peak, flare_end
 
+    ;+ SETTING FLARE TIME RANGES -;
     flare_interval = [flare_start, flare_end]
     rise_interval = [flare_start, flare_peak]
     fall_interval = [flare_peak, flare_end]

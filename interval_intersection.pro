@@ -23,8 +23,14 @@
 
 function interval_intersection, A, B
 
+    ;+ PREPARING A & B ARRAYS -;
+    ; Ensuring A & B are in anytim format
     A = anytim(A)
     B = anytim(B)
+
+    ; Sorting A & B arrays
+    A = sort_2d(A)
+    B = sort_2d(B)
 
     i = 0
     ii = 0
