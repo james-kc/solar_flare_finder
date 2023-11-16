@@ -77,6 +77,15 @@ pro compile_obs_table
             flare.aia_ycen $
         )
 
+        print, "Calculating XRT output..."
+        xrt_output = xrt_observed_stats( $
+            flare.flare_start, $
+            flare.flare_peak, $
+            flare.flare_end, $
+            flare.aia_xcen, $
+            flare.aia_ycen $
+        )
+
         print, ""
         print, `*** FLARE ${flare.index} COMPLETE ***`
         print, ""
@@ -85,6 +94,7 @@ pro compile_obs_table
         obs_cols = create_struct(obs_cols, fermi_output)
         obs_cols = create_struct(obs_cols, eve_output)
         obs_cols = create_struct(obs_cols, eis_output)
+        obs_cols = create_struct(obs_cols, xrt_output)
 
         ; help, obs_cols  ; Debugging struct types
         output = [temporary(output), obs_cols]

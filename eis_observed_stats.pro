@@ -5,12 +5,14 @@
 ;           arguments, returning a struct containing information about whether
 ;           Hinode/EIS was observing the sun during the solar flare.
 ; 
-; Calling sequence: eis_observed_stats(flare_start, flare_peak, flare_end)
+; Calling sequence: eis_observed_stats(flare_start, flare_peak, flare_end, flare_x_pos, flare_y_pos)
 ; 
 ; Input:
 ;   flare_start -   Time at which the flare started, e.g. '2023-10-01 14:44:00'
 ;   flare_peak -    Time at which the flare peaked, e.g. '2023-10-01 14:47:00'
 ;   flare_end -     Time at which the flare ended, e.g. '2023-10-01 14:50:00'
+;   flare_x_pos -   X position of flare on Sun.
+;   flare_y_pos -   Y position of flare on Sun.
 ;          
 ; Input Keywords:
 ;   verbose -   Prints running information.
@@ -35,6 +37,11 @@
 ;                               ; -1:       Malformed flare_start -> flare_peak
 ;                               ;           -> flare_end sequence.
 ;   }
+;
+;   Note for eis_frac_*:    This metric is a maximum possible observation of the
+;                           flare. Depending on the rastering, it is still
+;                           possible for the flare to be unobserved when a 
+;                           flare is within FOV of final rastered image.
 ;   
 ; Examples:
 ;   eis_observed_stats('2014-03-29 17:35:00', '2014-03-29 17:48:00', '2014-03-29 17:54:00', 503.089, 259.805)
@@ -43,11 +50,16 @@
 ;   eis_observed_stats('2017-09-06 23:33:00', '2017-09-06 23:39:00', '2017-09-06 23:44:00', 607.781, -223.206)
 ;   eis_observed_stats('2017-09-06 07:29:00', '2017-09-06 07:34:00', '2017-09-06 07:48:00', 510.536, -279.901)
 ;   
-; Written: James Kavanagh-Cranston, 10-Nov-2023
+; Written: James Kavanagh-Cranston, 16-Nov-2023
 ;
 ;-
 
-function eis_observed_stats, flare_start, flare_peak, flare_end, flare_x_pos, flare_y_pos
+function eis_observed_stats, $
+    flare_start, $
+    flare_peak, $
+    flare_end, $
+    flare_x_pos, $
+    flare_y_pos
 
     status = fix_zdbase( /EIS )
 
@@ -59,7 +71,7 @@ function eis_observed_stats, flare_start, flare_peak, flare_end, flare_x_pos, fl
     rise_interval = [flare_start, flare_peak]
     fall_interval = [flare_peak, flare_end]
 
-    ; ; Calculating duration of entire flare and rise and fall phases.
+    ; Calculating duration of entire flare and rise and fall phases.
     flare_duration = anytim(flare_interval[1]) - anytim(flare_interval[0])
     rise_duration = anytim(rise_interval[1]) - anytim(rise_interval[0])
     fall_duration = anytim(fall_interval[1]) - anytim(fall_interval[0])
@@ -117,6 +129,18 @@ function eis_observed_stats, flare_start, flare_peak, flare_end, flare_x_pos, fl
     ;+ AQUIRING EIS RASTERS -;
     eis_list_raster, time_range[0], time_range[1], eis_rasters, eis_count, files = eis_files
 
+    ; If no observed times then return unobserved struct
+    if (typename(eis_rasters) eq "INT") then begin
+
+        eis_observed = byte(0)
+        eis_frac_obs = float(0.0)
+        eis_frac_obs_rise = float(0.0)
+        eis_frac_obs_fall = float(0.0)
+
+        goto, to_return
+
+    endif
+
     observed_times = []
 
     ; Placing raster start (date_obs) and end (date_end) times into an
@@ -132,8 +156,6 @@ function eis_observed_stats, flare_start, flare_peak, flare_end, flare_x_pos, fl
             eis_rasters[i].fovx, $
             eis_rasters[i].fovy $
         )
-
-        ; print, valid_pointing, " ", anytim(eis_rasters[i].date_obs, /vms), " ", anytim(eis_rasters[i].date_end, /vms)
 
         ; If flare is in view, add time range to observed_times array.
         if valid_pointing then begin
