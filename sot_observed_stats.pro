@@ -1,11 +1,11 @@
 ;+
-; Name: xrt_observed_stats
+; Name: sot_observed_stats
 ; 
 ; Purpose:  This function accepts flare_start, flare_peak and flare_end as
 ;           arguments, returning a struct containing information about whether
-;           Hinode/XRT was observing the sun during the solar flare.
+;           Hinode/SOT was observing the sun during the solar flare.
 ; 
-; Calling sequence: eis_observed_stats(flare_start, flare_peak, flare_end, flare_x_pos, flare_y_pos)
+; Calling sequence: sot_observed_stats(flare_start, flare_peak, flare_end, flare_x_pos, flare_y_pos)
 ; 
 ; Input:
 ;   flare_start -   Time at which the flare started, e.g. '2023-10-01 14:44:00'
@@ -19,32 +19,35 @@
 ;
 ; Returns struct:
 ;   {
-;       xrt_observed,           ; 1:        XRT observing sun during flare.
-;                               ; 0:        XRT not observing sun during
+;       sot_observed,           ; 1:        SOT observing sun during flare.
+;                               ; 0:        SOT not observing sun during
 ;                               ;           flare.
 ;                               ; 255:      Malformed flare_start -> flare_peak
 ;                               ;           -> flare_end sequence.
-;       xrt_rise_observed,      ; 1:        XRT observing sun during flare rise.
-;                               ; 0:        XRT not observing sun during
+;       sot_rise_observed,      ; 1:        SOT observing sun during flare rise.
+;                               ; 0:        SOT not observing sun during
 ;                               ;           flare rise.
 ;                               ; 255:      Malformed flare_start -> flare_peak
 ;                               ;           -> flare_end sequence.
-;       xrt_fall_observed,      ; 1:        XRT observing sun during flare fall.
-;                               ; 0:        XRT not observing sun during
+;       sot_fall_observed,      ; 1:        SOT observing sun during flare fall.
+;                               ; 0:        SOT not observing sun during
 ;                               ;           flare fall.
 ;                               ; 255:      Malformed flare_start -> flare_peak
 ;                               ;           -> flare_end sequence.
 ;   }
 ;   
 ; Examples:
-;   xrt_observed_stats('2017-09-06 11:53:00', '2017-09-06 12:02:00', '2017-09-06 12:10:00', 527.439, -246.826)
-;   xrt_observed_stats('2017-09-06 08:57:00', '2017-09-06 09:10:00', '2017-09-06 09:17:00', 501.171, -233.009)
+;   sot_observed_stats('2014-03-29 17:35:00', '2014-03-29 17:48:00', '2014-03-29 17:54:00', 503.089, 259.805)
+;   sot_observed_stats('2017-09-06 08:57:00', '2017-09-06 09:10:00', '2017-09-06 09:17:00', 501.171, -233.009)
+;   sot_observed_stats('2017-09-06 15:51:00', '2017-09-06 15:56:00', '2017-09-06 16:03:00', 555.839, -228.344)
+;   sot_observed_stats('2017-09-06 23:33:00', '2017-09-06 23:39:00', '2017-09-06 23:44:00', 607.781, -223.206)
+;   sot_observed_stats('2017-09-06 07:29:00', '2017-09-06 07:34:00', '2017-09-06 07:48:00', 510.536, -279.901)
 ;   
 ; Written: James Kavanagh-Cranston, 16-Nov-2023
 ;
 ;-
 
-function xrt_observed_stats, $
+function sot_observed_stats, $
     flare_start, $
     flare_peak, $
     flare_end, $
@@ -52,7 +55,7 @@ function xrt_observed_stats, $
     flare_y_pos
 
     ;+ SETTING FLARE TIME RANGES -;
-    ; Extending time range +60 min -30 min for XRT
+    ; Extending time range +60 min -30 min for SOT
     time_range = [anytim(flare_start) - 1800, anytim(flare_end) + 3600]
 
     flare_interval = [flare_start, flare_end]
@@ -89,9 +92,9 @@ function xrt_observed_stats, $
     ) then begin
         
         ; Return an 'error' struct
-        xrt_observed = byte(-1)
-        xrt_rise_observed = byte(-1)
-        xrt_fall_observed = byte(-1)
+        sot_observed = byte(-1)
+        sot_rise_observed = byte(-1)
+        sot_fall_observed = byte(-1)
 
         goto, to_return
 
@@ -104,24 +107,23 @@ function xrt_observed_stats, $
     ) then begin
 
         ; Return an 'error' struct
-        xrt_observed = byte(-1)
-        xrt_rise_observed = byte(-1)
-        xrt_fall_observed = byte(-1)
+        sot_observed = byte(-1)
+        sot_rise_observed = byte(-1)
+        sot_fall_observed = byte(-1)
 
         goto, to_return
 
     endif
 
-    ;+ AQUIRING XRT OBS -;
-    xrt_cat, time_range[0], time_range[1], xrt_out, xrt_files, /urls
-    xrt_count = n_elements(xrt_out)
+    ;+ AQUIRING SOT OBS -;
+    sot_cat, time_range[0], time_range[1], /level0, sot_out, sot_files, tcount=sot_count, /urls
 
     ; If no observed times then return unobserved struct
-    if (typename(xrt_out) eq "INT") then begin
+    if (typename(sot_out) eq "INT") then begin
 
-        xrt_observed = byte(0)
-        xrt_rise_observed = byte(0)
-        xrt_fall_observed = byte(0)
+        sot_observed = byte(0)
+        sot_rise_observed = byte(0)
+        sot_fall_observed = byte(0)
 
         goto, to_return
 
@@ -129,25 +131,25 @@ function xrt_observed_stats, $
 
     observed_times = []
 
-    ; Placing raster start (anytim_dobs) and end (anytim_dobs + exptime) times into an
-    ; Array[2, x] where x is xrt_count.
-    for i = 0, (xrt_count - 1) do begin
+    ; Placing raster start (date_obs) and end (date_end) times into an
+    ; Array[2, x] where x is sot_count.
+    for i = 0, (sot_count - 1) do begin
 
-        ; Determine if the flare is in view of XRT.
+        ; Determine if the flare is in view of SOT.
         valid_pointing = instr_pointing_valid( $
             flare_x_pos, $
             flare_y_pos, $
-            xrt_out[i].xcen, $
-            xrt_out[i].ycen, $
-            xrt_out[i].fovx, $
-            xrt_out[i].fovy $
+            sot_out[i].xcen, $
+            sot_out[i].ycen, $
+            sot_out[i].fovx, $
+            sot_out[i].fovy $
         )
 
         ; If flare is in view, add time range to observed_times array.
         if valid_pointing then begin
 
-            obs_start = xrt_out[i].anytim_dobs
-            obs_end = xrt_out[i].anytim_dobs + xrt_out[i].exptime
+            obs_start = sot_out[i].anytim_dobs
+            obs_end = sot_out[i].anytim_dobs + sot_out[i].exptime
 
             observed_times = [[temporary(observed_times)], [obs_start, obs_end]]
 
@@ -158,9 +160,9 @@ function xrt_observed_stats, $
     ; If no observed times then return unobserved struct
     if (typename(observed_times) eq "UNDEFINED") then begin
 
-        xrt_observed = byte(0)
-        xrt_rise_observed = byte(0)
-        xrt_fall_observed = byte(0)
+        sot_observed = byte(0)
+        sot_rise_observed = byte(0)
+        sot_fall_observed = byte(0)
 
         goto, to_return
 
@@ -174,16 +176,17 @@ function xrt_observed_stats, $
     rise_observed_interval = interval_intersection(rise_interval, observed_times)
     fall_observed_interval = interval_intersection(fall_interval, observed_times)
 
-    xrt_observed = ~(typename(flare_observed_interval) eq "UNDEFINED")
-    xrt_rise_observed = ~(typename(rise_observed_interval) eq "UNDEFINED")
-    xrt_fall_observed = ~(typename(fall_observed_interval) eq "UNDEFINED")
+    sot_observed = ~(typename(flare_observed_interval) eq "UNDEFINED")
+    sot_rise_observed = ~(typename(rise_observed_interval) eq "UNDEFINED")
+    sot_fall_observed = ~(typename(fall_observed_interval) eq "UNDEFINED")
+
 
     to_return:
 
     return, { $
-        xrt_observed: xrt_observed, $
-        xrt_rise_observed: xrt_rise_observed, $
-        xrt_fall_observed: xrt_fall_observed $
+        sot_observed: sot_observed, $
+        sot_rise_observed: sot_rise_observed, $
+        sot_fall_observed: sot_fall_observed $
     }
 
 end
