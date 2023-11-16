@@ -36,24 +36,20 @@
 ;                               ;           -> flare_end sequence.
 ;   }
 ;   
-; Examples:     eis_observed_stats('2014-03-29 17:35:00', '2014-03-29 17:48:00', '2014-03-29 17:54:00', 503.089	259.805)
+; Examples:
+;   eis_observed_stats('2014-03-29 17:35:00', '2014-03-29 17:48:00', '2014-03-29 17:54:00', 503.089, 259.805)
+;   eis_observed_stats('2017-09-06 08:57:00', '2017-09-06 09:10:00', '2017-09-06 09:17:00', 501.171, -233.009)
+;   eis_observed_stats('2017-09-06 15:51:00', '2017-09-06 15:56:00', '2017-09-06 16:03:00', 555.839, -228.344)
+;   eis_observed_stats('2017-09-06 23:33:00', '2017-09-06 23:39:00', '2017-09-06 23:44:00', 607.781, -223.206)
+;   eis_observed_stats('2017-09-06 07:29:00', '2017-09-06 07:34:00', '2017-09-06 07:48:00', 510.536, -279.901)
 ;   
 ; Written: James Kavanagh-Cranston, 10-Nov-2023
 ;
 ;-
 
-function ewq;, flare_start, flare_peak, flare_end, x_pos, y_pos
+function eis_observed_stats, flare_start, flare_peak, flare_end, flare_x_pos, flare_y_pos
 
     status = fix_zdbase( /EIS )
-
-    flare_spe = ['2014-03-29 17:35:00', '2014-03-29 17:48:00', '2014-03-29 17:54:00']
-
-    flare_start = flare_spe[0]
-    flare_peak = flare_spe[1]
-    flare_end = flare_spe[2]
-
-    x_pos = 503.089
-    y_pos = 259.805
 
     ;+ SETTING FLARE TIME RANGES -;
     ; Extending time range +/- 4hr for EIS_LIST_RASTER
@@ -102,6 +98,22 @@ function ewq;, flare_start, flare_peak, flare_end, x_pos, y_pos
 
     endif
 
+    ; Handling case where flare location unknown
+    if ( $
+        (typename(flare_x_pos) eq "UNDEFINED") or $
+        (typename(flare_y_pos) eq "UNDEFINED") $
+    ) then begin
+
+        ; Return an 'error' struct
+        eis_observed = byte(-1)
+        eis_frac_obs = float(-1.0)
+        eis_frac_obs_rise = float(-1.0)
+        eis_frac_obs_fall = float(-1.0)
+
+        goto, to_return
+
+    endif
+
     ;+ AQUIRING EIS RASTERS -;
     eis_list_raster, time_range[0], time_range[1], eis_rasters, eis_count, files = eis_files
 
@@ -110,8 +122,37 @@ function ewq;, flare_start, flare_peak, flare_end, x_pos, y_pos
     ; Placing raster start (date_obs) and end (date_end) times into an
     ; Array[2, x] where x is eis_count.
     for i = 0, (eis_count - 1) do begin
-        observed_times = [[temporary(observed_times)], [eis_rasters[i].date_obs, eis_rasters[i].date_end]]
+
+        ; Determine if the flare is in view of EIS.
+        valid_pointing = instr_pointing_valid( $
+            flare_x_pos, $
+            flare_y_pos, $
+            eis_rasters[i].xcen, $
+            eis_rasters[i].ycen, $
+            eis_rasters[i].fovx, $
+            eis_rasters[i].fovy $
+        )
+
+        ; print, valid_pointing, " ", anytim(eis_rasters[i].date_obs, /vms), " ", anytim(eis_rasters[i].date_end, /vms)
+
+        ; If flare is in view, add time range to observed_times array.
+        if valid_pointing then begin
+            observed_times = [[temporary(observed_times)], [eis_rasters[i].date_obs, eis_rasters[i].date_end]]
+        endif
+
     endfor
+
+    ; If no observed times then return unobserved struct
+    if (typename(observed_times) eq "UNDEFINED") then begin
+
+        eis_observed = byte(0)
+        eis_frac_obs = float(0.0)
+        eis_frac_obs_rise = float(0.0)
+        eis_frac_obs_fall = float(0.0)
+
+        goto, to_return
+
+    endif
 
     ; Converting to "yyyy-mm-dd hh:mm:ss" format.
     observed_times = anytim2utc(observed_times, /vms)
@@ -140,12 +181,6 @@ function ewq;, flare_start, flare_peak, flare_end, x_pos, y_pos
         eis_frac_obs_fall = total(fall_observed_interval[1,*] - fall_observed_interval[0,*]) / fall_duration
         eis_frac_obs_fall = float(eis_frac_obs_fall)
     endif else eis_frac_obs_fall = float(0.0)
-
-    eis_rasters.xcen
-    eis_rasters.ycen
-    eis_rasters.fovx
-    eis_rasters.fovy
-    
 
     to_return:
 

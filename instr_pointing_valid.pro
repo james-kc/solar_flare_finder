@@ -4,11 +4,17 @@
 ; Purpose:  Returns 1 or 0 if the pointing and FOV information matches with the
 ;           flare location.
 ; 
-; Input:    
+; Input:
+;   flare_x - X position of flare.
+;   flare_y - Y position of flare.
+;   instr_x - X position instrument is pointing.
+;   instr_y - Y position instrument is pointing.
+;   instr_fov_x - FOV of the instrument in X direction.
+;   instr_fov_y - FOV of the instrument in Y direction.
 ;          
 ; Input Keywords:
 ;
-; Returns:  
+; Returns:  Returns 1 if flare in view of instrument, 0 if not.
 ;   
 ; Examples: 
 ;   
@@ -35,6 +41,6 @@ function instr_pointing_valid, $
         (flare_x le instr_x_p) and $
         (instr_y_n le flare_y) and $
         (flare_y le instr_y_p) $
-    ) then return, 1 else return, 0
+    ) then return, byte(1) else return, byte(0)
 
 end
