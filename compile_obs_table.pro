@@ -37,14 +37,16 @@ pro compile_obs_table
 
     endelse
 
-    joined_flare_list = joined_flare_list[1748:1770]  ; Temp shortening of flare list
+    ; joined_flare_list = joined_flare_list[1748:1770]  ; Temp shortening of flare list
+
+    total_flares = max(joined_flare_list.index)
 
     output = []
 
     foreach flare, joined_flare_list do begin
 
         print, ""
-        print, `*** BEGINNING FLARE ${flare.index} ***`
+        print, `*** BEGINNING FLARE ${flare.index}/${total_flares} ***`
         print, ""
 
         print, "Calculating RHESSI output..."
@@ -95,8 +97,17 @@ pro compile_obs_table
             flare.aia_ycen $
         )
 
+        print, "Calculating IRIS output..."
+        iris_output = iris_observed_stats( $
+            flare.flare_start, $
+            flare.flare_peak, $
+            flare.flare_end, $
+            flare.aia_xcen, $
+            flare.aia_ycen $
+        )
+
         print, ""
-        print, `*** FLARE ${flare.index} COMPLETE ***`
+        print, `*** FLARE ${flare.index}/${total_flares} COMPLETE ***`
         print, ""
 
         obs_cols = create_struct(flare, rsi_output)
@@ -105,6 +116,7 @@ pro compile_obs_table
         obs_cols = create_struct(obs_cols, eis_output)
         obs_cols = create_struct(obs_cols, xrt_output)
         obs_cols = create_struct(obs_cols, sot_output)
+        obs_cols = create_struct(obs_cols, iris_output)
 
         ; help, obs_cols  ; Debugging struct types
         output = [temporary(output), obs_cols]

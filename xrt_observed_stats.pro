@@ -13,9 +13,6 @@
 ;   flare_end -     Time at which the flare ended, e.g. '2023-10-01 14:50:00'
 ;   flare_x_pos -   X position of flare on Sun.
 ;   flare_y_pos -   Y position of flare on Sun.
-;          
-; Input Keywords:
-;   verbose -   Prints running information.
 ;
 ; Returns struct:
 ;   {
