@@ -15,7 +15,8 @@ pro fermi_test
   ; time_range = ['2010-06-12 00:30:00', '2010-06-12 00:33:00']
   ; time_range = ['2010-06-13 05:30:00', '2010-06-13 05:44:00']
   ; time_range = ['2011-04-11 23:40:00', '2011-04-12 00:03:00']
-  time_range = ['2017-09-06 11:53:00', '2017-09-06 12:10:00']
+  ; time_range = ['2017-09-06 11:53:00', '2017-09-06 12:10:00']
+  time_range = ['2013-11-09 05:00:00', '2013-11-09 08:30:00']
 
 
   ;gbm_find_data,date=time_range, pattern='cspec', det='b0', /copy, file=file, dir='~/spex'.
@@ -37,6 +38,9 @@ pro fermi_test
   gbm = obj->bin_data(data=gbmstruct,intervals=eband,units_str=obj->getunits(class='spex_data'))
   tgbm = obj->getaxis(/ut,/mean)
   linecolors
+
+  ; write_csv, 'instrument_data/2013_fermi_time.csv', anytim(tgbm, /vms)
+  ; write_csv, 'instrument_data/2013_fermi_gbm.csv', gbm
 
   utplot, anytim(tgbm,/ext), gbm[0,*], yra=[ .1,1e6],/ylog
 

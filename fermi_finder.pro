@@ -1,9 +1,15 @@
 
 pro fermi_finder
 
-  gev_start = '2014-02-03T15:40:00'
-  gev_peak = '2014-02-03T15:43:00'
-  gev_end = '2014-02-03T15:48:00'
+;   gev_start = '2014-02-03T15:40:00'
+;   gev_peak = '2014-02-03T15:43:00'
+;   gev_end = '2014-02-03T15:48:00'
+
+  flare_spe = ['2013-11-09 06:22:00', '2013-11-09 06:38:00', '2013-11-09 06:47:00']
+
+  gev_start = flare_spe[0]
+  gev_peak = flare_spe[1]
+  gev_end = flare_spe[2]
 
   gtr_ext = [ anytim( gev_start ) - 1800., anytim( gev_end ) + 3600. ] ;; Extend GOES start/end times by 30/60 minutes
   gtr_ext = anytim( gtr_ext, /vms )
