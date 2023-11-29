@@ -92,6 +92,8 @@ df['INSTR_OBSERVATIONS'] = df[
     [f"{instr}_OBSERVED" for instr in instrument_names_short]
 ].sum(axis=1)
 
+df['CLASS_LETTER'] = df['CLASS'].apply(lambda x: x[0])
+
 # Finding flares observed by all instruments.
 fully_obs = df[df['INSTR_OBSERVATIONS'] == 8].reset_index()
 
@@ -122,25 +124,25 @@ instr_obs_pivot = (
 
 print(instr_obs_pivot)
 
-# Plot histogram
-instr_obs_pivot['count'].plot(
-    kind='bar', edgecolor='black', color='grey', linewidth=1
-)
+# # Plot histogram
+# instr_obs_pivot['count'].plot(
+#     kind='bar', edgecolor='black', color='grey', linewidth=1
+# )
 
-# Customize the plot
-plt.title('Multi-Instrument Observations', fontsize=16, fontweight='bold')
-plt.xlabel('Number of Instruments Observed', fontsize=14)
-plt.ylabel('Count', fontsize=14)
-plt.xticks(rotation=0)
-plt.yticks(rotation=0)
+# # Customize the plot
+# plt.title('Multi-Instrument Observations', fontsize=16, fontweight='bold')
+# plt.xlabel('Number of Instruments Observed', fontsize=14)
+# plt.ylabel('Count', fontsize=14)
+# plt.xticks(rotation=0)
+# plt.yticks(rotation=0)
 
-plt.savefig(
-    'stats_out/multi_instr_obs_bar_chart.png',
-    dpi=300,
-    bbox_inches='tight'
-)
+# plt.savefig(
+#     'stats_out/multi_instr_obs_bar_chart.png',
+#     dpi=300,
+#     bbox_inches='tight'
+# )
 
-plt.show()
+# plt.show()
 
 
 #######################
@@ -164,58 +166,58 @@ instr_obs_range_info['range_end'] = (
     .fillna(pd.to_datetime(date.today()))
 )
 
-fig = px.timeline(instr_obs_range_info.sort_values('range_start'),
-                  x_start="range_start",
-                  x_end="range_end",
-                  y="instrument",
-                  color="degraded",
-                  color_discrete_map={True: 'red', False: 'green'},
-                  labels={'degraded': 'Degraded'}
-)
+# fig = px.timeline(instr_obs_range_info.sort_values('range_start'),
+#                   x_start="range_start",
+#                   x_end="range_end",
+#                   y="instrument",
+#                   color="degraded",
+#                   color_discrete_map={True: 'red', False: 'green'},
+#                   labels={'degraded': 'Degraded'}
+# )
 
-# Find the common time range
-common_start = instr_obs_range_info[
-    instr_obs_range_info['instrument'] == 'IRIS'
-]['range_start'].min()
+# # Find the common time range
+# common_start = instr_obs_range_info[
+#     instr_obs_range_info['instrument'] == 'IRIS'
+# ]['range_start'].min()
 
-common_end = instr_obs_range_info[
-    instr_obs_range_info['instrument'] == 'MEGSA'
-]['range_end'].max()
+# common_end = instr_obs_range_info[
+#     instr_obs_range_info['instrument'] == 'MEGSA'
+# ]['range_end'].max()
 
-# Overplot the common time range as a shaded area
-fig.add_shape(
-    dict(
-        type="rect",
-        x0=common_start,
-        x1=common_end,
-        y0=-.5,
-        y1=len(instr_obs_range_info['instrument'].unique()),
-        fillcolor="lawngreen",
-        opacity=0.5,
-        layer="above",
-        line=dict(width=0),
-    )
-)
+# # Overplot the common time range as a shaded area
+# fig.add_shape(
+#     dict(
+#         type="rect",
+#         x0=common_start,
+#         x1=common_end,
+#         y0=-.5,
+#         y1=len(instr_obs_range_info['instrument'].unique()),
+#         fillcolor="lawngreen",
+#         opacity=0.5,
+#         layer="above",
+#         line=dict(width=0),
+#     )
+# )
 
-# Overplot the range of time considered in this study
-# 2010-04-30  -  SDO first light
-# 2019-06-01  -  End of solar cycle 24
-fig.add_shape(
-    dict(
-        type="rect",
-        x0=date(2010, 4, 30),
-        x1=date(2019, 6, 1),
-        y0=-.5,
-        y1=len(instr_obs_range_info['instrument'].unique()),
-        fillcolor="grey",
-        opacity=0.5,
-        layer="below",
-        line=dict(width=0),
-    )
-)
+# # Overplot the range of time considered in this study
+# # 2010-04-30  -  SDO first light
+# # 2019-06-01  -  End of solar cycle 24
+# fig.add_shape(
+#     dict(
+#         type="rect",
+#         x0=date(2010, 4, 30),
+#         x1=date(2019, 6, 1),
+#         y0=-.5,
+#         y1=len(instr_obs_range_info['instrument'].unique()),
+#         fillcolor="grey",
+#         opacity=0.5,
+#         layer="below",
+#         line=dict(width=0),
+#     )
+# )
 
-# Show the figure
-fig.show()
+# # Show the figure
+# fig.show()
 
 
 ########################################
@@ -267,46 +269,103 @@ for instr_short, instr_full in instr_names_zip:
 ##############
 
 
-upset_plot_df = df[[f"{instr}_OBSERVED" for instr in instrument_names_short]]
-upset_plot_df.columns = instrument_names_full
+# upset_plot_df = df[[f"{instr}_OBSERVED" for instr in instrument_names_short]]
+# upset_plot_df.columns = instrument_names_full
 
-# Convert the DataFrame to a MultiIndex DataFrame
-df_multiindex = pd.MultiIndex.from_frame(upset_plot_df, names=upset_plot_df.columns)
-df_multiindex = upset_plot_df.set_index(df_multiindex)
+# # Convert the DataFrame to a MultiIndex DataFrame
+# df_multiindex = pd.MultiIndex.from_frame(upset_plot_df, names=upset_plot_df.columns)
+# df_multiindex = upset_plot_df.set_index(df_multiindex)
 
-# Create an UpSet object
-upset = UpSet(
-    df_multiindex,
-    min_subset_size=50,
-    show_counts=True,
-    sort_by='cardinality'
+# # Create an UpSet object
+# upset = UpSet(
+#     df_multiindex,
+#     min_subset_size=50,
+#     show_counts=True,
+#     sort_by='cardinality'
+# )
+
+# # Plot the UpSet plot
+# upset.plot()
+# plt.savefig("stats_out/upsetplot_cardinality.png")
+
+# # Create an UpSet object
+# upset = UpSet(
+#     df_multiindex,
+#     min_subset_size=50,
+#     show_counts=True,
+#     sort_by='degree'
+# )
+
+# # Plot the UpSet plot
+# upset.plot()
+# plt.savefig("stats_out/upsetplot_degree.png")
+
+# # Create an UpSet object
+# upset = UpSet(
+#     df_multiindex,
+#     show_counts=True,
+#     sort_by='degree'
+# )
+
+# # Plot the UpSet plot
+# upset.plot()
+# plt.savefig("stats_out/upsetplot.png")
+
+# plt.show()
+
+
+######################################
+# Class Distribution of Solar Flares #
+######################################
+
+
+def flare_class_pivot(single_instr_df, instr_name):
+
+    class_pivot = (
+        single_instr_df
+        .groupby('CLASS_LETTER')
+        .size()
+        .reset_index(name='count')
+    )
+
+    print()
+    print(f"Instrument: {instr_name}")
+    print(class_pivot)
+
+    class_pivot = (
+        single_instr_df
+        .groupby('CLASS_LETTER')
+        .size()
+    )
+
+    # Plot histogram
+    class_pivot.plot(
+        kind='bar', edgecolor='black', color='grey', linewidth=1
+    )
+
+    # Customize the plot
+    plt.title(f"{instr_name} Observed Flares", fontsize=16, fontweight='bold')
+    plt.xlabel('Flare Class', fontsize=14)
+    plt.ylabel('Count', fontsize=14)
+    plt.xticks(rotation=0)
+    plt.yticks(rotation=0)
+
+    plt.savefig(
+        f"stats_out/{instr_name}_flare_classes.png",
+        dpi=300,
+        bbox_inches='tight'
+    )
+
+    plt.show()
+
+# Creating new instrument name list with RSI replaced with RHESSI
+instrument_names_full = (
+    ['RHESSI' if i == 'RSI' else i for i in instrument_names_short]
 )
 
-# Plot the UpSet plot
-upset.plot()
-plt.savefig("stats_out/upsetplot_cardinality.png")
+instr_names_zip = zip(instrument_names_short, instrument_names_full)
 
-# Create an UpSet object
-upset = UpSet(
-    df_multiindex,
-    min_subset_size=50,
-    show_counts=True,
-    sort_by='degree'
-)
+flare_class_pivot(df, 'All')
 
-# Plot the UpSet plot
-upset.plot()
-plt.savefig("stats_out/upsetplot_degree.png")
-
-# Create an UpSet object
-upset = UpSet(
-    df_multiindex,
-    show_counts=True,
-    sort_by='degree'
-)
-
-# Plot the UpSet plot
-upset.plot()
-plt.savefig("stats_out/upsetplot.png")
-
-plt.show()
+for instr_short, instr_full in instr_names_zip:
+    flare_class_pivot(df[df[f"{instr_short}_OBSERVED"] == 1], instr_full)
