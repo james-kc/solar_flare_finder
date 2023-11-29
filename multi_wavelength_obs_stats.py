@@ -269,6 +269,9 @@ for instr_short, instr_full in instr_names_zip:
 ##############
 
 
+## Upset plots for all flares. ##
+
+
 # upset_plot_df = df[[f"{instr}_OBSERVED" for instr in instrument_names_short]]
 # upset_plot_df.columns = instrument_names_full
 
@@ -310,6 +313,32 @@ for instr_short, instr_full in instr_names_zip:
 # # Plot the UpSet plot
 # upset.plot()
 # plt.savefig("stats_out/upsetplot.png")
+
+# plt.show()
+
+
+## Upset plots for flares with >= 7 instruments observing. ##
+
+
+seven_obs = df[df['INSTR_OBSERVATIONS'] >= 7].reset_index(drop=True)
+
+# upset_plot_df = seven_obs[[f"{instr}_OBSERVED" for instr in instrument_names_short]]
+# upset_plot_df.columns = instrument_names_full
+
+# # Convert the DataFrame to a MultiIndex DataFrame
+# df_multiindex = pd.MultiIndex.from_frame(upset_plot_df, names=upset_plot_df.columns)
+# df_multiindex = upset_plot_df.set_index(df_multiindex)
+
+# # Create an UpSet object
+# upset = UpSet(
+#     df_multiindex,
+#     show_counts=True,
+#     sort_by='cardinality'
+# )
+
+# # Plot the UpSet plot
+# upset.plot()
+# plt.savefig("stats_out/upsetplot_7+_cardinality.png")
 
 # plt.show()
 
