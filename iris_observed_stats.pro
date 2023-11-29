@@ -53,7 +53,8 @@ function iris_observed_stats, $
     flare_peak, $
     flare_end, $
     flare_x_pos, $
-    flare_y_pos
+    flare_y_pos, $
+    return_pointing=return_pointing
 
     ;+ SETTING FLARE TIME RANGES -;
     time_range = [anytim(flare_start), anytim(flare_end)]
@@ -196,11 +197,24 @@ function iris_observed_stats, $
 
     to_return:
 
-    return, {$
-        iris_observed: iris_observed, $
-        iris_frac_obs: iris_frac_obs, $
-        iris_frac_obs_rise: iris_frac_obs_rise, $
-        iris_frac_obs_fall: iris_frac_obs_fall $
-    }
+    if keyword_set(return_pointing) then begin
+
+        return, {$
+            xcen: iris_rasters.xcen, $
+            ycen: iris_rasters.ycen, $
+            fovx: iris_rasters.xfov, $
+            fovy: iris_rasters.yfov $
+        }
+
+    endif else begin
+
+        return, {$
+            iris_observed: iris_observed, $
+            iris_frac_obs: iris_frac_obs, $
+            iris_frac_obs_rise: iris_frac_obs_rise, $
+            iris_frac_obs_fall: iris_frac_obs_fall $
+        }
+
+    endelse
 
 end

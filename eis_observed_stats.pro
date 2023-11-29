@@ -56,7 +56,8 @@ function eis_observed_stats, $
     flare_peak, $
     flare_end, $
     flare_x_pos, $
-    flare_y_pos
+    flare_y_pos, $
+    return_pointing=return_pointing
 
     status = fix_zdbase( /EIS )
 
@@ -203,11 +204,24 @@ function eis_observed_stats, $
 
     to_return:
 
-    return, {$
-        eis_observed: eis_observed, $
-        eis_frac_obs: eis_frac_obs, $
-        eis_frac_obs_rise: eis_frac_obs_rise, $
-        eis_frac_obs_fall: eis_frac_obs_fall $
-    }
+    if keyword_set(return_pointing) then begin
+
+        return, {$
+            xcen: eis_rasters.xcen, $
+            ycen: eis_rasters.ycen, $
+            fovx: eis_rasters.fovx, $
+            fovy: eis_rasters.fovy $
+        }
+
+    endif else begin
+
+        return, {$
+            eis_observed: eis_observed, $
+            eis_frac_obs: eis_frac_obs, $
+            eis_frac_obs_rise: eis_frac_obs_rise, $
+            eis_frac_obs_fall: eis_frac_obs_fall $
+        }
+
+    endelse
 
 end

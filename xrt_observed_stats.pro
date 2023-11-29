@@ -46,7 +46,8 @@ function xrt_observed_stats, $
     flare_peak, $
     flare_end, $
     flare_x_pos, $
-    flare_y_pos
+    flare_y_pos, $
+    return_pointing=return_pointing
 
     ;+ SETTING FLARE TIME RANGES -;
     ; Extending time range +60 min -30 min for XRT
@@ -177,10 +178,23 @@ function xrt_observed_stats, $
 
     to_return:
 
-    return, { $
-        xrt_observed: xrt_observed, $
-        xrt_rise_observed: xrt_rise_observed, $
-        xrt_fall_observed: xrt_fall_observed $
-    }
+    if keyword_set(return_pointing) then begin
+
+        return, {$
+            xcen: xrt_out.xcen, $
+            ycen: xrt_out.ycen, $
+            fovx: xrt_out.fovx, $
+            fovy: xrt_out.fovy $
+        }
+
+    endif else begin
+
+        return, { $
+            xrt_observed: xrt_observed, $
+            xrt_rise_observed: xrt_rise_observed, $
+            xrt_fall_observed: xrt_fall_observed $
+        }
+
+    endelse
 
 end

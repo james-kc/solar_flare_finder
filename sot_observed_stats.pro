@@ -49,7 +49,8 @@ function sot_observed_stats, $
     flare_peak, $
     flare_end, $
     flare_x_pos, $
-    flare_y_pos
+    flare_y_pos, $
+    return_pointing=return_pointing
 
     ;+ SETTING FLARE TIME RANGES -;
     ; Extending time range +60 min -30 min for SOT
@@ -180,10 +181,23 @@ function sot_observed_stats, $
 
     to_return:
 
-    return, { $
-        sot_observed: sot_observed, $
-        sot_rise_observed: sot_rise_observed, $
-        sot_fall_observed: sot_fall_observed $
-    }
+    if keyword_set(return_pointing) then begin
+
+        return, {$
+            xcen: sot_out.xcen, $
+            ycen: sot_out.ycen, $
+            fovx: sot_out.fovx, $
+            fovy: sot_out.fovy $
+        }
+
+    endif else begin
+
+        return, { $
+            sot_observed: sot_observed, $
+            sot_rise_observed: sot_rise_observed, $
+            sot_fall_observed: sot_fall_observed $
+        }
+
+    endelse
 
 end
