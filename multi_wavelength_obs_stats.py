@@ -1,7 +1,7 @@
+from datetime import date
 import pandas as pd
 import matplotlib.pyplot as plt
 import plotly.express as px
-from datetime import date
 from upsetplot import UpSet
 
 
