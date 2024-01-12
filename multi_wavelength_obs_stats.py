@@ -87,6 +87,26 @@ instrument_names_short = [
 for instr in instrument_names_short:
     df = df[df[f"{instr}_OBSERVED"] != 255]
 
+# Removing flares with no coordinates (0,0)
+
+no_coords = df[
+    (df['AIA_XCEN'] == 0) &
+    (df['AIA_YCEN'] == 0)
+]
+
+print(f"Number of flares with no coordinates: {len(no_coords)}")
+
+df = df[
+    (df['AIA_XCEN'] != 0) &
+    (df['AIA_YCEN'] != 0)
+]
+
+# Removing stray A-class flares
+
+df = df[
+    ~df['CLASS'].str.contains('A')
+]
+
 # Adding column to count number of observations made by different instruments.
 df['INSTR_OBSERVATIONS'] = df[
     [f"{instr}_OBSERVED" for instr in instrument_names_short]
@@ -109,9 +129,21 @@ fully_obs = fully_obs[
 
 print(fully_obs)
 
+# Finding flares that occurred during the lifetimes of all instruments
+# 17/07/2013 -> 27/05/2014
+
+all_instr_flares = df[
+    (df['FLARE_START'] > '17/07/2013') &
+    (df['FLARE_END'] < '27/05/2014')
+]
+
+print(f"Number of flares within all 8 instr's lifetime: {len(all_instr_flares)}")
+
+print(f"Total number of flares: {len(df)}")
+
 
 ############################################################################
-# Creating a histogram for number of instruments observing a single flare. #
+# Creating a bar chart for number of instruments observing a single flare. #
 ############################################################################
 
 
@@ -124,25 +156,28 @@ instr_obs_pivot = (
 
 print(instr_obs_pivot)
 
-# # Plot histogram
-# instr_obs_pivot['count'].plot(
-#     kind='bar', edgecolor='black', color='grey', linewidth=1
-# )
+# Plot histogram
+ax = instr_obs_pivot['count'].plot(
+    kind='bar', edgecolor='black', color='grey', linewidth=1
+)
 
-# # Customize the plot
+for container in ax.containers:
+    ax.bar_label(container)
+
+# Customize the plot
 # plt.title('Multi-Instrument Observations', fontsize=16, fontweight='bold')
-# plt.xlabel('Number of Instruments Observed', fontsize=14)
-# plt.ylabel('Count', fontsize=14)
-# plt.xticks(rotation=0)
-# plt.yticks(rotation=0)
+plt.xlabel('Number of Instruments Observed', fontsize=14)
+plt.ylabel('Count', fontsize=14)
+plt.xticks(rotation=0)
+plt.yticks(rotation=0)
 
-# plt.savefig(
-#     'stats_out/multi_instr_obs_bar_chart.png',
-#     dpi=300,
-#     bbox_inches='tight'
-# )
+plt.savefig(
+    'stats_out/multi_instr_obs_bar_chart.png',
+    dpi=300,
+    bbox_inches='tight'
+)
 
-# plt.show()
+plt.show()
 
 
 #######################
@@ -322,25 +357,26 @@ for instr_short, instr_full in instr_names_zip:
 
 seven_obs = df[df['INSTR_OBSERVATIONS'] >= 7].reset_index(drop=True)
 
-# upset_plot_df = seven_obs[[f"{instr}_OBSERVED" for instr in instrument_names_short]]
-# upset_plot_df.columns = instrument_names_full
+upset_plot_df = seven_obs[[f"{instr}_OBSERVED" for instr in instrument_names_short]]
+upset_plot_df.columns = instrument_names_full
 
-# # Convert the DataFrame to a MultiIndex DataFrame
-# df_multiindex = pd.MultiIndex.from_frame(upset_plot_df, names=upset_plot_df.columns)
-# df_multiindex = upset_plot_df.set_index(df_multiindex)
+# Convert the DataFrame to a MultiIndex DataFrame
+df_multiindex = pd.MultiIndex.from_frame(upset_plot_df, names=upset_plot_df.columns)
+df_multiindex = upset_plot_df.set_index(df_multiindex)
 
-# # Create an UpSet object
-# upset = UpSet(
-#     df_multiindex,
-#     show_counts=True,
-#     sort_by='cardinality'
-# )
+# Create an UpSet object
+upset = UpSet(
+    df_multiindex,
+    show_counts=True,
+    sort_by='cardinality',
+    with_lines=False
+)
 
-# # Plot the UpSet plot
-# upset.plot()
-# plt.savefig("stats_out/upsetplot_7+_cardinality.png")
+# Plot the UpSet plot
+upset.plot()
+plt.savefig("stats_out/upsetplot_7+_cardinality.png")
 
-# plt.show()
+plt.show()
 
 
 ######################################
