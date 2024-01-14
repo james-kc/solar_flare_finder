@@ -75,13 +75,13 @@ df = pd.read_csv(
 # 8 instruments
 instrument_names_short = [
     'RSI',
-    'FERMI',
     'MEGSA',
     'MEGSB',
     'EIS',
-    'XRT',
     'SOT',
-    'IRIS'
+    'XRT',
+    'IRIS',
+    'FERMI'
 ]
 
 # Removing flares with incorrect flare_start -> flare_peak -> flare_end sequence
@@ -141,6 +141,35 @@ all_instr_flares = df[
 print(f"Number of flares within all 8 instr's lifetime: {len(all_instr_flares)}")
 
 print(f"Total number of flares: {len(df)}")
+
+
+#####################
+# The Average Flare #
+#####################
+
+
+df['flare_durations'] = df['FLARE_END'] - df['FLARE_START']
+df['flare_durations_mins_int'] = df['flare_durations'] / pd.Timedelta(minutes=1)
+
+df.boxplot('flare_durations_mins_int', by='CLASS_LETTER', sym ='')
+
+plt.title('')
+plt.suptitle('')
+plt.xlabel('GOES Class')
+plt.ylabel('Flare Duration (Minutes)')
+plt.grid(axis='x')
+plt.ylim(bottom=0)
+
+plt.savefig(
+    'stats_out/the_average_flare.png',
+    dpi=300,
+    bbox_inches='tight'
+)
+plt.show()
+
+avg_flare_duration = df['flare_durations'].mean()
+
+print(f"Average Flare Duration: {avg_flare_duration}")
 
 
 ############################################################################
@@ -266,7 +295,29 @@ instrument_names_full = (
     ['RHESSI' if i == 'RSI' else i for i in instrument_names_short]
 )
 
+expected_success_rates = [
+    '50%',
+    '100%',
+    '12.5%',
+    '0.5-6%',
+    '0.5-8%',
+    '25-100%',
+    '0.5-3%',
+    '50%'
+]
+
+success_rate_table = pd.DataFrame(
+    {
+        'instrument': instrument_names_full,
+        'expected_success_rates': expected_success_rates
+    }
+)
+
 instr_names_zip = zip(instrument_names_short, instrument_names_full)
+
+percent_obs_col = []
+lifetime_observable_flares_col = []
+lifetime_observed_flares_col = []
 
 for instr_short, instr_full in instr_names_zip:
 
@@ -291,6 +342,10 @@ for instr_short, instr_full in instr_names_zip:
     no_flares_observed = observable_flares_df[f"{instr_short}_OBSERVED"].sum()
     percent_obs = round(100 * (no_flares_observed/no_observable_flares), 1)
 
+    percent_obs_col.append(percent_obs)
+    lifetime_observable_flares_col.append(no_observable_flares)
+    lifetime_observed_flares_col.append(no_flares_observed)
+
     print()
     print(f"Instrument:         {instr_full}")
     print(f"Launch:             {instr_start}")
@@ -298,6 +353,11 @@ for instr_short, instr_full in instr_names_zip:
     print(f"Observable Flares:  {no_observable_flares}")
     print(f"Flares Observed:    {no_flares_observed}")
     print(f"% Observed:         {percent_obs}%")
+
+
+success_rate_table['lifetime_observable_flares'] = lifetime_observable_flares_col
+success_rate_table['lifetime_observed_flares'] = lifetime_observed_flares_col
+success_rate_table['%_observed_9yr'] = percent_obs_col
 
 
 ######################################################
@@ -313,7 +373,11 @@ instrument_names_full = (
 instr_names_zip = zip(instrument_names_short, instrument_names_full)
 
 print()
-print("Instrument\tSuccess Rate (%)")
+
+percent_obs_any_frac_col = []
+percent_obs_half_frac_col = []
+
+no_observable_flares = len(all_instr_flares)
 
 for instr_short, instr_full in instr_names_zip:
 
@@ -329,8 +393,14 @@ for instr_short, instr_full in instr_names_zip:
 
     instr_end = instr_end.max()
 
-    no_observable_flares = len(all_instr_flares)
 
+    # Two definitions for an "observed" flare (comment out definition not in
+    # use):
+
+    # obs_frac > 0 = observation
+    no_flares_observed_any_frac = all_instr_flares[f"{instr_short}_OBSERVED"].sum()
+
+    # obs_frac > 0.5 = observation
     if instr_short not in ('MEGSA', 'XRT', 'SOT'):
 
         frac_obs = (
@@ -338,19 +408,25 @@ for instr_short, instr_full in instr_names_zip:
             all_instr_flares[f"{instr_short}_FRAC_OBS_FALL"]
         ) / 2
 
-        no_flares_observed = len(
+        no_flares_observed_half_frac = len(
             frac_obs[frac_obs > 0.5]
         )
 
     else:
         # For MEGS-A, XRT and SOT, no "{instr_short}_FRAC_OBS_RISE" exits,
         # therefore we just use the "{instr_short}_OBSERVED" Boolean.
-        no_flares_observed = all_instr_flares[f"{instr_short}_OBSERVED"].sum()
-    
-    percent_obs = round(100 * (no_flares_observed/no_observable_flares), 1)
+        no_flares_observed_half_frac = all_instr_flares[f"{instr_short}_OBSERVED"].sum()
 
-    print(f"{instr_full}\t\t{percent_obs}")
+    percent_obs_any_frac = round(100 * (no_flares_observed_any_frac/no_observable_flares), 1)
+    percent_obs_half_frac = round(100 * (no_flares_observed_half_frac/no_observable_flares), 1)
 
+    percent_obs_any_frac_col.append(percent_obs_any_frac)
+    percent_obs_half_frac_col.append(percent_obs_half_frac)
+
+success_rate_table['%_observed_any_frac_11mo'] = percent_obs_any_frac_col
+success_rate_table['%_observed_half_frac_11mo'] = percent_obs_half_frac_col
+
+print(success_rate_table)
 
 ##############
 # UpSet Plot #
@@ -487,3 +563,4 @@ flare_class_pivot(df, 'All')
 
 for instr_short, instr_full in instr_names_zip:
     flare_class_pivot(df[df[f"{instr_short}_OBSERVED"] == 1], instr_full)
+
