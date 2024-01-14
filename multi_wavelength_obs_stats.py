@@ -3,6 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import plotly.express as px
 from upsetplot import UpSet
+import numpy as np
 
 
 # Set font to Times New Roman
@@ -329,7 +330,23 @@ for instr_short, instr_full in instr_names_zip:
     instr_end = instr_end.max()
 
     no_observable_flares = len(all_instr_flares)
-    no_flares_observed = all_instr_flares[f"{instr_short}_OBSERVED"].sum()
+
+    if instr_short not in ('MEGSA', 'XRT', 'SOT'):
+
+        frac_obs = (
+            all_instr_flares[f"{instr_short}_FRAC_OBS_RISE"] +
+            all_instr_flares[f"{instr_short}_FRAC_OBS_FALL"]
+        ) / 2
+
+        no_flares_observed = len(
+            frac_obs[frac_obs > 0.5]
+        )
+
+    else:
+        # For MEGS-A, XRT and SOT, no "{instr_short}_FRAC_OBS_RISE" exits,
+        # therefore we just use the "{instr_short}_OBSERVED" Boolean.
+        no_flares_observed = all_instr_flares[f"{instr_short}_OBSERVED"].sum()
+    
     percent_obs = round(100 * (no_flares_observed/no_observable_flares), 1)
 
     print(f"{instr_full}\t\t{percent_obs}")
