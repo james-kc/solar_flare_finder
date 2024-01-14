@@ -298,6 +298,42 @@ for instr_short, instr_full in instr_names_zip:
     print(f"Flares Observed:    {no_flares_observed}")
     print(f"% Observed:         {percent_obs}%")
 
+
+######################################################
+# Instrument Success Rate Over Identical Time Period #
+######################################################
+
+
+# Creating new instrument name list with RSI replaced with RHESSI
+instrument_names_full = (
+    ['RHESSI' if i == 'RSI' else i for i in instrument_names_short]
+)
+
+instr_names_zip = zip(instrument_names_short, instrument_names_full)
+
+print()
+print("Instrument\tSuccess Rate (%)")
+
+for instr_short, instr_full in instr_names_zip:
+    
+    instr_start = instr_obs_range_info[
+        (instr_obs_range_info['instrument'] == instr_full)
+    ]['range_start']
+
+    instr_start = instr_start.min()
+
+    instr_end = instr_obs_range_info[
+        (instr_obs_range_info['instrument'] == instr_full)
+    ]['range_end']
+    
+    instr_end = instr_end.max()
+
+    no_observable_flares = len(all_instr_flares)
+    no_flares_observed = all_instr_flares[f"{instr_short}_OBSERVED"].sum()
+    percent_obs = round(100 * (no_flares_observed/no_observable_flares), 1)
+
+    print(f"{instr_full}\t\t{percent_obs}")
+
     
 ##############
 # UpSet Plot #
