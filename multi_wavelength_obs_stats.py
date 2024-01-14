@@ -428,6 +428,8 @@ success_rate_table['%_observed_half_frac_11mo'] = percent_obs_half_frac_col
 
 print(success_rate_table)
 
+success_rate_table.to_csv('stats_out/success_rate_table.csv', index=False)
+
 ##############
 # UpSet Plot #
 ##############
