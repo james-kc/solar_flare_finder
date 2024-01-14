@@ -9,7 +9,7 @@ import numpy as np
 # Set font to Times New Roman
 plt.rcParams['font.family'] = 'Times New Roman'
 
-flare_list_filename = 'instr_observed_flare_list.csv'
+FLARE_LIST_FILENAME = 'instr_observed_flare_list.csv'
 
 
 ###################
@@ -18,7 +18,7 @@ flare_list_filename = 'instr_observed_flare_list.csv'
 
 
 df = pd.read_csv(
-    flare_list_filename,
+    FLARE_LIST_FILENAME,
     parse_dates=['FLARE_START', 'FLARE_PEAK', 'FLARE_END']
 )
 '''
@@ -186,14 +186,14 @@ plt.show()
 #######################
 
 
-instr_obs_range_info_filename = (
+INSTR_OBS_RANGE_INFO_FILENAME = (
     'instrument_info/instrument_observing_range_info.csv'
 )
 
 # Read the CSV into a DataFrame
 instr_obs_range_info = pd.read_csv(
-    instr_obs_range_info_filename, 
-    parse_dates=['range_start', 'range_end'], 
+    INSTR_OBS_RANGE_INFO_FILENAME,
+    parse_dates=['range_start', 'range_end'],
     dayfirst=True
 )
 
@@ -269,7 +269,7 @@ instrument_names_full = (
 instr_names_zip = zip(instrument_names_short, instrument_names_full)
 
 for instr_short, instr_full in instr_names_zip:
-    
+
     instr_start = instr_obs_range_info[
         (instr_obs_range_info['instrument'] == instr_full)
     ]['range_start']
@@ -279,7 +279,7 @@ for instr_short, instr_full in instr_names_zip:
     instr_end = instr_obs_range_info[
         (instr_obs_range_info['instrument'] == instr_full)
     ]['range_end']
-    
+
     instr_end = instr_end.max()
 
     observable_flares_df = df[
@@ -316,7 +316,7 @@ print()
 print("Instrument\tSuccess Rate (%)")
 
 for instr_short, instr_full in instr_names_zip:
-    
+
     instr_start = instr_obs_range_info[
         (instr_obs_range_info['instrument'] == instr_full)
     ]['range_start']
@@ -326,7 +326,7 @@ for instr_short, instr_full in instr_names_zip:
     instr_end = instr_obs_range_info[
         (instr_obs_range_info['instrument'] == instr_full)
     ]['range_end']
-    
+
     instr_end = instr_end.max()
 
     no_observable_flares = len(all_instr_flares)
@@ -351,7 +351,7 @@ for instr_short, instr_full in instr_names_zip:
 
     print(f"{instr_full}\t\t{percent_obs}")
 
-    
+
 ##############
 # UpSet Plot #
 ##############
