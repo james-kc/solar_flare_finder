@@ -138,10 +138,24 @@ all_instr_flares = df[
     (df['FLARE_END'] < '27/05/2014')
 ]
 
+print()
 print(f"Number of flares within all 8 instr's lifetime: {len(all_instr_flares)}")
+print(f"Total number of flares: {len(df)}\n")
 
-print(f"Total number of flares: {len(df)}")
 
+###################
+# Numerical Stats #
+###################
+
+
+# % flares observed
+flares_observed = len(df[df['INSTR_OBSERVATIONS'] != 0])
+observation_percentage = 100 * (flares_observed / len(df))
+
+print(
+    f"% of flares observed by at least 1 instrument: \
+        {round(observation_percentage, 1)}%"
+)
 
 #####################
 # The Average Flare #
@@ -155,8 +169,10 @@ df.boxplot('flare_durations_mins_int', by='CLASS_LETTER', sym ='')
 
 plt.title('')
 plt.suptitle('')
-plt.xlabel('GOES Class')
-plt.ylabel('Flare Duration (Minutes)')
+plt.xlabel('GOES Class', fontsize=20)
+plt.ylabel('Flare Duration (Minutes)', fontsize=20)
+plt.xticks(fontsize=13)
+plt.yticks(fontsize=13)
 plt.grid(axis='x')
 plt.ylim(bottom=0)
 
@@ -176,7 +192,7 @@ print(f"Average Flare Duration: {avg_flare_duration}")
 # Creating a bar chart for number of instruments observing a single flare. #
 ############################################################################
 
-
+# Entire time range
 instr_obs_pivot = (
     df
     .groupby('INSTR_OBSERVATIONS')
@@ -192,17 +208,50 @@ ax = instr_obs_pivot['count'].plot(
 )
 
 for container in ax.containers:
-    ax.bar_label(container)
+    ax.bar_label(container, fontsize=13)
 
 # Customize the plot
 # plt.title('Multi-Instrument Observations', fontsize=16, fontweight='bold')
-plt.xlabel('Number of Instruments Observed', fontsize=14)
-plt.ylabel('Count', fontsize=14)
-plt.xticks(rotation=0)
-plt.yticks(rotation=0)
+plt.xlabel('Number of Instruments Observed', fontsize=20)
+plt.ylabel('Count', fontsize=20)
+plt.xticks(rotation=0, fontsize=13)
+plt.yticks(rotation=0, fontsize=13)
 
 plt.savefig(
     'stats_out/multi_instr_obs_bar_chart.png',
+    dpi=300,
+    bbox_inches='tight'
+)
+
+plt.show()
+
+# Common time range
+instr_obs_pivot = (
+    all_instr_flares
+    .groupby('INSTR_OBSERVATIONS')
+    .size()
+    .reset_index(name='count')
+)
+
+print(instr_obs_pivot)
+
+# Plot histogram
+ax = instr_obs_pivot['count'].plot(
+    kind='bar', edgecolor='black', color='grey', linewidth=1
+)
+
+for container in ax.containers:
+    ax.bar_label(container, fontsize=13)
+
+# Customize the plot
+# plt.title('Multi-Instrument Observations', fontsize=16, fontweight='bold')
+plt.xlabel('Number of Instruments Observed', fontsize=20)
+plt.ylabel('Count', fontsize=20)
+plt.xticks(rotation=0, fontsize=13)
+plt.yticks(rotation=0, fontsize=13)
+
+plt.savefig(
+    'stats_out/multi_instr_obs_bar_chart_common_time_range.png',
     dpi=300,
     bbox_inches='tight'
 )
@@ -448,21 +497,30 @@ success_rate_table.to_csv('stats_out/success_rate_table.csv', index=False)
 # # Create an UpSet object
 # upset = UpSet(
 #     df_multiindex,
-#     min_subset_size=50,
+#     min_subset_size=200,
 #     show_counts=True,
-#     sort_by='cardinality'
+#     sort_by='cardinality',
+#     with_lines=False
 # )
 
 # # Plot the UpSet plot
 # upset.plot()
-# plt.savefig("stats_out/upsetplot_cardinality.png")
+
+# plt.savefig(
+#     "stats_out/upsetplot_cardinality.png",
+#     dpi=300,
+#     bbox_inches='tight'
+# )
+
 
 # # Create an UpSet object
+
 # upset = UpSet(
 #     df_multiindex,
 #     min_subset_size=50,
 #     show_counts=True,
-#     sort_by='degree'
+#     sort_by='degree',
+#     with_lines=False
 # )
 
 # # Plot the UpSet plot
@@ -473,41 +531,51 @@ success_rate_table.to_csv('stats_out/success_rate_table.csv', index=False)
 # upset = UpSet(
 #     df_multiindex,
 #     show_counts=True,
-#     sort_by='degree'
+#     sort_by='degree',
+#     with_lines=False
 # )
 
 # # Plot the UpSet plot
 # upset.plot()
-# plt.savefig("stats_out/upsetplot.png")
+
+# plt.savefig(
+#     "stats_out/upsetplot.png",
+#     dpi=300,
+#     bbox_inches='tight'
+# )
+
+
+
+# ## Upset plots for flares with >= 7 instruments observing. ##
+
+
+# seven_obs = df[df['INSTR_OBSERVATIONS'] >= 7].reset_index(drop=True)
+
+# upset_plot_df = seven_obs[[f"{instr}_OBSERVED" for instr in instrument_names_short]]
+# upset_plot_df.columns = instrument_names_full
+
+# # Convert the DataFrame to a MultiIndex DataFrame
+# df_multiindex = pd.MultiIndex.from_frame(upset_plot_df, names=upset_plot_df.columns)
+# df_multiindex = upset_plot_df.set_index(df_multiindex)
+
+# # Create an UpSet object
+# upset = UpSet(
+#     df_multiindex,
+#     show_counts=True,
+#     sort_by='cardinality',
+#     with_lines=False
+# )
+
+# # Plot the UpSet plot
+# upset.plot()
+
+# plt.savefig(
+#     "stats_out/upsetplot_7+_cardinality.png",
+#     dpi=300,
+#     bbox_inches='tight'
+# )
 
 # plt.show()
-
-
-## Upset plots for flares with >= 7 instruments observing. ##
-
-
-seven_obs = df[df['INSTR_OBSERVATIONS'] >= 7].reset_index(drop=True)
-
-upset_plot_df = seven_obs[[f"{instr}_OBSERVED" for instr in instrument_names_short]]
-upset_plot_df.columns = instrument_names_full
-
-# Convert the DataFrame to a MultiIndex DataFrame
-df_multiindex = pd.MultiIndex.from_frame(upset_plot_df, names=upset_plot_df.columns)
-df_multiindex = upset_plot_df.set_index(df_multiindex)
-
-# Create an UpSet object
-upset = UpSet(
-    df_multiindex,
-    show_counts=True,
-    sort_by='cardinality',
-    with_lines=False
-)
-
-# Plot the UpSet plot
-upset.plot()
-plt.savefig("stats_out/upsetplot_7+_cardinality.png")
-
-plt.show()
 
 
 ######################################
@@ -561,8 +629,10 @@ instrument_names_full = (
 
 instr_names_zip = zip(instrument_names_short, instrument_names_full)
 
-flare_class_pivot(df, 'All')
+# Distribution for all instruments
+# flare_class_pivot(df, 'All')
 
-for instr_short, instr_full in instr_names_zip:
-    flare_class_pivot(df[df[f"{instr_short}_OBSERVED"] == 1], instr_full)
+# Distributions for individual instruments
+# for instr_short, instr_full in instr_names_zip:
+#     flare_class_pivot(df[df[f"{instr_short}_OBSERVED"] == 1], instr_full)
 
