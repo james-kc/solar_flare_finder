@@ -148,6 +148,27 @@ print(f"Total number of flares: {len(df)}\n")
 ###################
 
 
+def goes_class_ranking_val(goes_class: str) -> float:
+
+    class_rank = {
+        "A": 10,
+        "B": 20,
+        "C": 30,
+        "M": 40,
+        "X": 50
+    }
+    
+    if not isinstance(goes_class, str):
+        return 0
+    
+    letter = goes_class[0]
+    number = goes_class[1:]
+
+    return class_rank[letter] + float(number)
+
+df['CLASS_RANK'] = df['CLASS'].apply(goes_class_ranking_val)
+
+
 # % flares observed
 flares_observed = len(df[df['INSTR_OBSERVATIONS'] != 0])
 observation_percentage = 100 * (flares_observed / len(df))
@@ -156,6 +177,34 @@ print(
     f"% of flares observed by at least 1 instrument: \
         {round(observation_percentage, 1)}%"
 )
+
+failed_rhessi_flare_flag = df[
+    (df['RSI_FLARE_TRIGGERED'] == 0) &
+    (df['RSI_OBSERVED'] == 1)
+]
+
+total_rhessi_observed = df[
+    df['RSI_OBSERVED'] == 1
+]
+print(f'No. Failed RHESSI Flare Flags: {len(failed_rhessi_flare_flag)}')
+print(f'No. Flares Observed by RHESSI: {len(total_rhessi_observed)}')
+print(
+    f'% Failed RHESSI Flare Flags: \
+        {round(100 * len(failed_rhessi_flare_flag) / len(total_rhessi_observed), 1)}%'
+)
+
+# This is making a box plot of all flares which RHESSI failed to flag as flares.
+failed_rhessi_flare_flag.boxplot(column='CLASS_RANK', sym ='')
+# df.boxplot(column='CLASS_RANK', sym ='')
+
+# df.hist(column='CLASS_RANK', bins=50)
+
+plt.ylabel('Class Rank', fontsize=20)
+plt.yticks(fontsize=13)
+plt.grid(axis='x')
+plt.xticks([])
+plt.show()
+quit()
 
 #####################
 # The Average Flare #
