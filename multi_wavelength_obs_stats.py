@@ -172,11 +172,16 @@ df['CLASS_RANK'] = df['CLASS'].apply(goes_class_ranking_val)
 # % flares observed
 flares_observed = len(df[df['INSTR_OBSERVATIONS'] != 0])
 observation_percentage = 100 * (flares_observed / len(df))
+avg_no_sim_obs = round(df['INSTR_OBSERVATIONS'].mean(axis=0), 1)
+# avg_no_sim_obs = round(all_instr_flares['INSTR_OBSERVATIONS'].mean(axis=0), 1)
 
 print(
     f"% of flares observed by at least 1 instrument: \
         {round(observation_percentage, 1)}%"
 )
+
+print(f"Average number of simultaneous observations: {avg_no_sim_obs}")
+
 
 failed_rhessi_flare_flag = df[
     (df['RSI_FLARE_TRIGGERED'] == 0) &
@@ -204,7 +209,7 @@ plt.yticks(fontsize=13)
 plt.grid(axis='x')
 plt.xticks([])
 plt.show()
-quit()
+
 
 #####################
 # The Average Flare #
