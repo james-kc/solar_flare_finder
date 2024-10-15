@@ -1,0 +1,9 @@
+instrument,expected_success_rates,lifetime_observable_flares,lifetime_observed_flares,%_observed_9yr,%_observed_any_frac_11mo,%_observed_half_frac_11mo
+RHESSI,50%,14172,9989,70.5,76.9,55.5
+MEGSA,100%,8400,8400,100.0,100.0,100.0
+MEGSB,12.5%,14453,1956,13.5,11.1,10.2
+EIS,0.5-6%,14458,1239,8.6,6.9,4.3
+SOT,0.5-8%,14458,2158,14.9,17.3,17.3
+XRT,25-100%,14458,7853,54.3,52.6,52.6
+IRIS,0.5-3%,7790,1404,18.0,10.5,8.0
+FERMI,50%,14458,11017,76.2,78.2,56.4
