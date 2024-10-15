@@ -19,3 +19,7 @@ It is planned that this project will be moved to Python using SunPy which will i
 
 ## MSci Thesis
 [Statistics of Multi-Instrument Observations of Solar Flares](https://github.com/james-kc/solar_flare_finder/blob/main/Statistics%20of%20Multi-Instrument%20Observations%20of%20Solar%20Flares%20-%20James%20Kavanagh-Cranston.pdf)
+
+## Ongoing Python Conversion Work
+Work being completed in the conversion of this project to python can be found in the [python-conversion](https://github.com/james-kc/solar_flare_finder/tree/python-conversion) branch of this repository.
+
