@@ -1,5 +1,5 @@
 """
-Solar Flare Data Extraction Script
+Solar Flare List Generator
 Author: James Kavanagh-Cranston
 Contact: jkavanaghcranston01@qub.ac.uk
 
