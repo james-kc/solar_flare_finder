@@ -124,7 +124,6 @@ def rhessi_algorithm(flare_start, flare_peak, flare_end, debug=False, verbose=Fa
 
     # Create time range
     time_range = [flare_start.iso, flare_end.iso]
-    that_day = [flare_start.strftime('%Y-%m-%d'), flare_end.strftime('%Y-%m-%d') + " 23:59:59"]
 
     # Query RHESSI data for the given time range
     query = Fido.search(a.Time(time_range[0], time_range[1]), a.Instrument.rhessi)
@@ -143,15 +142,23 @@ def rhessi_algorithm(flare_start, flare_peak, flare_end, debug=False, verbose=Fa
 
     # Open the RHESSI FITS file using astropy.io.fits
     with astropy.io.fits.open(result[0]) as hdulist:
+        # Pulling relevant flag info from fits file
         flag_info = hdulist['HSI_OBSSUMMFLAGINFO'].data
         flag_names = np.array([s.strip().lower() for s in flag_info['FLAG_IDS'][0]])
         flag_data = hdulist['HSI_OBSSUMMFLAGDATA'].data['flags']
         
-        flag_df = pd.DataFrame(flag_data, columns=flag_names)
-        flag_df['datetime'] = countrate_data.index
-        flag_columns = flag_df.columns.difference(['datetime'])  # Get flag columns except 'datetime'
-        flag_df[flag_columns] = flag_df[flag_columns].astype(bool)
-        flag_df['observable'] = ~(flag_df['saa_flag'] | flag_df['eclipse_flag'])
+    # Creating and formatting a flag dataframe
+    flag_df = pd.DataFrame(flag_data, columns=flag_names)
+    flag_df['datetime'] = countrate_data.index
+    flag_df = flag_df[[ # Pulling relevant flag columns
+        'datetime',
+        'saa_flag',
+        'eclipse_flag',
+        'flare_flag'
+    ]]
+    flag_columns = flag_df.columns.difference(['datetime'])  # Get flag columns except 'datetime'
+    flag_df[flag_columns] = flag_df[flag_columns].astype(bool)
+    flag_df['observable'] = ~(flag_df['saa_flag'] | flag_df['eclipse_flag'])
 
     countrate_data = countrate_data[(countrate_data.index > time_range[0]) & (countrate_data.index < time_range[1])]
     flags_during_flare = flag_df[(flag_df['datetime'] > time_range[0]) & (flag_df['datetime'] < time_range[1])].reset_index()
