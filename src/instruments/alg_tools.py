@@ -2,7 +2,7 @@ import unittest
 from typing import List
 import numpy as np
 from matplotlib import pyplot as plt
-
+import inspect
 
 def visualise_intersections(A: List[List[int]], B: List[List[int]]) -> None:
     """
@@ -15,15 +15,24 @@ def visualise_intersections(A: List[List[int]], B: List[List[int]]) -> None:
     Returns:
         None: This function displays a plot showing the intervals of A, B, and their overlaps.
     """
+    
+    # Get the names of the variables passed to the function
+    frame = inspect.currentframe().f_back
+    arg_info = inspect.getargvalues(frame)
+    
+    # Extract the variable names for A and B
+    A_name = [name for name, value in arg_info.locals.items() if value is A][0]
+    B_name = [name for name, value in arg_info.locals.items() if value is B][0]
+
     _, ax = plt.subplots(figsize=(8, 2))
 
     # Plot ranges for A
     for i, (start, stop) in enumerate(A):
-        ax.plot([start, stop], [1, 1], color="blue", lw=6, label="A" if i == 0 else "")
+        ax.plot([start, stop], [1, 1], color="blue", lw=6, label=A_name if i == 0 else "")
 
     # Plot ranges for B
     for i, (start, stop) in enumerate(B):
-        ax.plot([start, stop], [2, 2], color="red", lw=6, label="B" if i == 0 else "")
+        ax.plot([start, stop], [2, 2], color="red", lw=6, label=B_name if i == 0 else "")
 
     # Mark overlap
     overlap_ranges = []
@@ -43,7 +52,7 @@ def visualise_intersections(A: List[List[int]], B: List[List[int]]) -> None:
 
     # Customize the plot
     ax.set_yticks([1, 1.5, 2])
-    ax.set_yticklabels(["A", "Overlap", "B"])
+    ax.set_yticklabels([A_name, "Overlap", B_name])
     ax.set_xlabel("Number Line")
     ax.legend()
     ax.grid(True, axis="x")
