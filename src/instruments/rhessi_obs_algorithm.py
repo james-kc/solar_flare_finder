@@ -224,11 +224,11 @@ def rhessi_algorithm(flare_start, flare_peak, flare_end, debug=False, verbose=Fa
         rsi_frac_obs_fall = 0.0
 
     return {
-        "rsi_observed": int(rsi_observed),
-        "rsi_flare_triggered": int(rsi_flare_triggered),
-        "rsi_frac_obs": rsi_frac_obs,
-        "rsi_frac_obs_rise": rsi_frac_obs_rise,
-        "rsi_frac_obs_fall": rsi_frac_obs_fall,
+        "rsi_observed": bool(rsi_observed),
+        "rsi_flare_triggered": bool(rsi_flare_triggered),
+        "rsi_frac_obs": float(rsi_frac_obs),
+        "rsi_frac_obs_rise": float(rsi_frac_obs_rise),
+        "rsi_frac_obs_fall": float(rsi_frac_obs_fall),
     }
 
 
