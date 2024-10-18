@@ -4,8 +4,17 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 
-# Function to plot ranges
 def visualise_intersections(A: List[List[int]], B: List[List[int]]) -> None:
+    """
+    Visualizes the intersections of two sets of intervals on a number line.
+
+    Parameters:
+        A (List[List[int]]): A list of intervals, where each interval is represented as a list of two integers [start, stop].
+        B (List[List[int]]): A list of intervals, where each interval is represented as a list of two integers [start, stop].
+
+    Returns:
+        None: This function displays a plot showing the intervals of A, B, and their overlaps.
+    """
     _, ax = plt.subplots(figsize=(8, 2))
 
     # Plot ranges for A
@@ -42,7 +51,18 @@ def visualise_intersections(A: List[List[int]], B: List[List[int]]) -> None:
     plt.show()
 
 
-def interval_intersection(A: List[List[int]], B: List[List[int]]) -> np.ndarray:
+def interval_intersection(A: List[List[float]], B: List[List[float]]) -> np.ndarray:
+    """
+    Computes the intersection of two sets of intervals.
+
+    Parameters:
+        A (List[List[float]]): A list of intervals, where each interval is represented as a list of two integers [start, stop].
+        B (List[List[float]]): A list of intervals, where each interval is represented as a list of two integers [start, stop].
+
+    Returns:
+        np.ndarray: An array of intervals that represent the intersections between A and B.
+                    If there are no intersections, returns an empty array.
+    """
     A = sorted(A, key=lambda x: x[0])
     B = sorted(B, key=lambda x: x[0])
 
@@ -53,7 +73,11 @@ def interval_intersection(A: List[List[int]], B: List[List[int]]) -> np.ndarray:
         a_start, a_end = A[i]
         b_start, b_end = B[j]
 
-        if a_start <= b_end and b_start <= a_end:  # Overlapping intervals
+        if (
+            a_start <= b_end
+            and b_start <= a_end
+            and max(a_start, b_start) != min(a_end, b_end) # Infinitesimal overlap handling
+        ):  # Overlapping intervals
             result.append([max(a_start, b_start), min(a_end, b_end)])
 
         if a_end <= b_end:
@@ -65,8 +89,14 @@ def interval_intersection(A: List[List[int]], B: List[List[int]]) -> np.ndarray:
 
 
 class TestIntervalIntersection(unittest.TestCase):
+    """
+    Unit tests for the interval_intersection function.
+    """
 
     def test_overlapping_intervals(self):
+        """
+        Test case for overlapping intervals.
+        """
         A = [[1, 3], [5, 9], [12, 15]]
         B = [[2, 6], [8, 10], [14, 18]]
         result = interval_intersection(A, B)
@@ -74,6 +104,9 @@ class TestIntervalIntersection(unittest.TestCase):
         np.testing.assert_array_equal(result, expected)
 
     def test_non_overlapping_intervals(self):
+        """
+        Test case for non-overlapping intervals.
+        """
         A = [[1, 2], [5, 7]]
         B = [[3, 4], [8, 10]]
         result = interval_intersection(A, B)
@@ -81,6 +114,9 @@ class TestIntervalIntersection(unittest.TestCase):
         np.testing.assert_array_equal(result, expected)
 
     def test_one_list_empty(self):
+        """
+        Test case when one list of intervals is empty.
+        """
         A = [[1, 2], [5, 7]]
         B = []
         result = interval_intersection(A, B)
@@ -88,6 +124,9 @@ class TestIntervalIntersection(unittest.TestCase):
         np.testing.assert_array_equal(result, expected)
 
     def test_both_lists_empty(self):
+        """
+        Test case when both lists of intervals are empty.
+        """
         A = []
         B = []
         result = interval_intersection(A, B)
@@ -95,6 +134,9 @@ class TestIntervalIntersection(unittest.TestCase):
         np.testing.assert_array_equal(result, expected)
 
     def test_enclosing_intervals(self):
+        """
+        Test case for intervals where one interval encloses others.
+        """
         A = [[1, 10]]
         B = [[2, 5], [6, 9]]
         result = interval_intersection(A, B)
@@ -102,10 +144,23 @@ class TestIntervalIntersection(unittest.TestCase):
         np.testing.assert_array_equal(result, expected)
 
     def test_unordered_intervals(self):
+        """
+        Test case for unordered intervals.
+        """
         A = [[1, 10]]
         B = [[6, 9], [2, 5]]
         result = interval_intersection(A, B)
         expected = np.array([[2, 5], [6, 9]])
+        np.testing.assert_array_equal(result, expected)
+
+    def test_infinitesimal_overlap(self):
+        """
+        Test case for intervals where an end value equals a start value.
+        """
+        A = [[1, 2]]
+        B = [[2, 3]]
+        result = interval_intersection(A, B)
+        expected = np.array([])
         np.testing.assert_array_equal(result, expected)
 
 
