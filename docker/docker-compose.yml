@@ -1,0 +1,33 @@
+version: "3.9"
+
+services:
+  flare-updater:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      args:
+        VERSION: 0.1.0
+    container_name: solar_flare_finder_updater
+    command: solar-flare-finder update
+    volumes:
+      - flare_data:/app/data
+    restart: "no"
+
+  flare-web:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      args:
+        VERSION: 0.1.0
+    container_name: solar_flare_finder_web
+    command: uvicorn solar_flare_finder.web.app:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    volumes:
+      - flare_data:/app/data
+    depends_on:
+      - flare-updater
+
+volumes:
+  flare_data:
+    driver: local
