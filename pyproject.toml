@@ -13,7 +13,7 @@ dependencies = [
     "numpy",
     "pandas",
     "astropy",
-    "sunpy",
+    "sunpy[net]",
     "fastapi",
     "uvicorn",
 ]
@@ -26,6 +26,7 @@ dev = [
     "ruff",
     "sphinx",
     "sphinx-rtd-theme",
+    "sunpy[all]",
 ]
 
 [project.scripts]
