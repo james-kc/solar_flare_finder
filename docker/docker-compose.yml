@@ -6,9 +6,9 @@ services:
       context: ..
       dockerfile: docker/Dockerfile
       args:
-        VERSION: 0.1.0
+        VERSION: ${VERSION}  # will come from environment
     container_name: solar_flare_finder_updater
-    command: solar-flare-finder update
+    command: update
     volumes:
       - flare_data:/app/data
     restart: "no"
@@ -18,9 +18,9 @@ services:
       context: ..
       dockerfile: docker/Dockerfile
       args:
-        VERSION: 0.1.0
+        VERSION: ${VERSION}  # will come from environment
     container_name: solar_flare_finder_web
-    command: uvicorn solar_flare_finder.web.app:app --host 0.0.0.0 --port 8000
+    command: web
     ports:
       - "8000:8000"
     volumes:

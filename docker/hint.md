@@ -1,6 +1,5 @@
-```
-docker build \
-  --build-arg VERSION=$(python -m build --wheel >/dev/null && \
-    python -c "from importlib.metadata import version; print(version('solar-flare-finder'))") \
-  -t solar-flare-finder .
+```bash
+bash dev/build.sh
+docker-compose -f docker/docker-compose.yml run flare-updater
+docker-compose -f docker/docker-compose.yml up flare-web
 ```
