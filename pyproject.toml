@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "solar-flare-finder"
+version = "0.1.0"
+description = "Statistics of multi-instrument observations of solar flares"
+authors = [{ name = "James Kavanagh-Cranston" }]
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy",
+    "pandas",
+    "astropy",
+    "sunpy",
+    "fastapi",
+    "uvicorn",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-cov",
+    "black",
+    "ruff",
+    "sphinx",
+    "sphinx-rtd-theme",
+]
+
+[project.scripts]
+solar-flare-finder = "solar_flare_finder.cli:main"
