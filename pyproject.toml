@@ -34,3 +34,8 @@ solar-flare-finder = "solar_flare_finder.cli:main"
 
 [tool.setuptools]
 packages = ["solar_flare_finder"]
+
+[tool.black]
+line-length = 100
+target-version = ['py38']
+include = '\.pyi?$'
