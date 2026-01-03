@@ -1,9 +1,11 @@
 from dataclasses import dataclass
 from datetime import datetime
 
+
 @dataclass
 class SolarFlare:
     """Represents a solar flare event with timing and location data."""
+
     start: datetime
     """Flare start time (UTC)."""
     peak: datetime
