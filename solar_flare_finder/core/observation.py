@@ -9,11 +9,11 @@ class InstrumentObservation:
     """Name of the instrument used for observation."""
     observed: bool
     """Whether the flare was observed by this instrument."""
-    frac_obs: float | None
+    frac_obs: float | None = None
     """Fraction of the flare observed (overall)."""
-    frac_obs_rise: float | None
+    frac_obs_rise: float | None = None
     """Fraction of the flare rise phase observed."""
-    frac_obs_fall: float | None
+    frac_obs_fall: float | None = None
     """Fraction of the flare fall phase observed."""
 
     def __post_init__(self):
@@ -25,4 +25,3 @@ class InstrumentObservation:
             x is not None for x in [self.frac_obs, self.frac_obs_rise, self.frac_obs_fall]
         ):
             raise ValueError("observed=False but fraction values are provided")
-
