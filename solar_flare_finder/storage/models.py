@@ -20,7 +20,7 @@ from sqlalchemy import (
     UniqueConstraint,
     Index,
 )
-from sqlalchemy.orm import declarative_base, relationship
+from sqlalchemy.orm import declarative_base, relationship, validates
 
 from solar_flare_finder.core.constants import (
     FLARES_TABLE,
@@ -33,6 +33,7 @@ Base = declarative_base()
 ################
 # FLARES TABLE #
 ################
+
 
 class Flare(Base):
     __tablename__ = FLARES_TABLE
@@ -67,21 +68,16 @@ class Flare(Base):
         lazy="selectin",
     )
 
-    __table_args__ = (
-        Index("ix_flares_class_full", "class_letter", "class_mag"),
-    )
+    __table_args__ = (Index("ix_flares_class_full", "class_letter", "class_mag"),)
 
     def __repr__(self) -> str:
-        return (
-            f"<Flare(id={self.id}, "
-            f"class={self.class_}, "
-            f"start={self.flare_start})>"
-        )
+        return f"<Flare(id={self.id}, " f"class={self.class_}, " f"start={self.flare_start})>"
 
 
 #################################
 # INSTRUMENT OBSERVATIONS TABLE #
 #################################
+
 
 class InstrumentObservation(Base):
     __tablename__ = INSTRUMENT_OBS_TABLE
@@ -103,9 +99,47 @@ class InstrumentObservation(Base):
     flare_flag = Column(Boolean, nullable=True)
 
     # Fractional coverage
-    frac_obs = Column(Float, nullable=True)
-    frac_obs_rise = Column(Float, nullable=True)
-    frac_obs_fall = Column(Float, nullable=True)
+    frac_obs = Column(Float, nullable=False)
+    frac_obs_rise = Column(Float, nullable=False)
+    frac_obs_fall = Column(Float, nullable=False)
+
+    @validates("observed", "frac_obs", "frac_obs_rise", "frac_obs_fall")
+    def validate_fractions(self, key, value):
+        # TODO: This quite likely doesn't work although I don't know how this @validates works
+
+        # Temporarily set the value to self for validation
+        temp_values = {
+            "observed": value if key == "observed" else getattr(self, "observed", False),
+            "frac_obs": value if key == "frac_obs" else getattr(self, "frac_obs", None),
+            "frac_obs_rise": (
+                value if key == "frac_obs_rise" else getattr(self, "frac_obs_rise", None)
+            ),
+            "frac_obs_fall": (
+                value if key == "frac_obs_fall" else getattr(self, "frac_obs_fall", None)
+            ),
+        }
+
+        if temp_values["observed"] and all(
+            x == 0.0
+            for x in [
+                temp_values["frac_obs"],
+                temp_values["frac_obs_rise"],
+                temp_values["frac_obs_fall"],
+            ]
+        ):
+            raise ValueError("observed=True but all fraction values are zero")
+
+        if not temp_values["observed"] and any(
+            x != 0.0
+            for x in [
+                temp_values["frac_obs"],
+                temp_values["frac_obs_rise"],
+                temp_values["frac_obs_fall"],
+            ]
+        ):
+            raise ValueError("observed=False but fraction values are not zero")
+
+        return value
 
     # Relationship back to flare
     flare = relationship(

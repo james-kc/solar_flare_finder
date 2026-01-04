@@ -12,7 +12,7 @@ All values here should be treated as READ-ONLY.
 """
 
 from dataclasses import dataclass
-from typing import Dict, List, Set
+from typing import Dict, Set
 from datetime import datetime
 
 
@@ -65,8 +65,6 @@ class InstrumentSpec:
     operational_start: datetime
     operational_end: datetime | None
     has_flare_flag: bool = False
-    has_fractional_coverage: bool = True
-    has_rise_fall: bool = True
 
 
 #######################
@@ -138,11 +136,5 @@ def allowed_obs_fields(spec: InstrumentSpec) -> Set[str]:
 
     if spec.has_flare_flag:
         fields.add("flare_flag")
-
-    if spec.has_fractional_coverage:
-        fields.add("frac_obs")
-
-        if spec.has_rise_fall:
-            fields |= {"frac_obs_rise", "frac_obs_fall"}
 
     return fields
