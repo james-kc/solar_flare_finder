@@ -19,8 +19,9 @@ from sqlalchemy import (
     ForeignKey,
     UniqueConstraint,
     Index,
+    event,
 )
-from sqlalchemy.orm import declarative_base, relationship, validates
+from sqlalchemy.orm import declarative_base, relationship
 
 from solar_flare_finder.core.constants import (
     FLARES_TABLE,
@@ -103,44 +104,6 @@ class InstrumentObservation(Base):
     frac_obs_rise = Column(Float, nullable=False)
     frac_obs_fall = Column(Float, nullable=False)
 
-    @validates("observed", "frac_obs", "frac_obs_rise", "frac_obs_fall")
-    def validate_fractions(self, key, value):
-        # TODO: This quite likely doesn't work although I don't know how this @validates works
-
-        # Temporarily set the value to self for validation
-        temp_values = {
-            "observed": value if key == "observed" else getattr(self, "observed", False),
-            "frac_obs": value if key == "frac_obs" else getattr(self, "frac_obs", None),
-            "frac_obs_rise": (
-                value if key == "frac_obs_rise" else getattr(self, "frac_obs_rise", None)
-            ),
-            "frac_obs_fall": (
-                value if key == "frac_obs_fall" else getattr(self, "frac_obs_fall", None)
-            ),
-        }
-
-        if temp_values["observed"] and all(
-            x == 0.0
-            for x in [
-                temp_values["frac_obs"],
-                temp_values["frac_obs_rise"],
-                temp_values["frac_obs_fall"],
-            ]
-        ):
-            raise ValueError("observed=True but all fraction values are zero")
-
-        if not temp_values["observed"] and any(
-            x != 0.0
-            for x in [
-                temp_values["frac_obs"],
-                temp_values["frac_obs_rise"],
-                temp_values["frac_obs_fall"],
-            ]
-        ):
-            raise ValueError("observed=False but fraction values are not zero")
-
-        return value
-
     # Relationship back to flare
     flare = relationship(
         "Flare",
@@ -169,3 +132,25 @@ class InstrumentObservation(Base):
             f"instrument={self.instrument}, "
             f"observed={self.observed})>"
         )
+
+
+@event.listens_for(InstrumentObservation, "before_insert")
+@event.listens_for(InstrumentObservation, "before_update")
+def validate_fractions(mapper, connection, target):
+    """
+    Ensure that fraction fields are consistent with observed flag.
+
+    - If observed=True, at least one fraction should be nonzero
+    - If observed=False, all fractions must be zero or None
+    """
+    fracs = [target.frac_obs, target.frac_obs_rise, target.frac_obs_fall]
+
+    if target.observed and all(x == 0.0 for x in fracs):
+        raise ValueError("observed=True but all fraction values are 0.0")
+
+    if (
+        not target.observed
+        and target.frac_obs != 0.0
+        and any(x != 0.0 for x in [target.frac_obs_rise, target.frac_obs_fall])
+    ):
+        raise ValueError("observed=False but fraction values are nonzero")
