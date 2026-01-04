@@ -3,23 +3,27 @@ from typing import List
 import numpy as np
 from matplotlib import pyplot as plt
 import inspect
+from datetime import datetime, timedelta
+
 
 def visualise_intersections(A: List[List[int]], B: List[List[int]]) -> None:
     """
     Visualizes the intersections of two sets of intervals on a number line.
 
     Parameters:
-        A (List[List[int]]): A list of intervals, where each interval is represented as a list of two integers [start, stop].
-        B (List[List[int]]): A list of intervals, where each interval is represented as a list of two integers [start, stop].
+        A (List[List[int]]): A list of intervals, where each interval is represented as a list of
+            two integers [start, stop].
+        B (List[List[int]]): A list of intervals, where each interval is represented as a list of
+            two integers [start, stop].
 
     Returns:
         None: This function displays a plot showing the intervals of A, B, and their overlaps.
     """
-    
+
     # Get the names of the variables passed to the function
     frame = inspect.currentframe().f_back
     arg_info = inspect.getargvalues(frame)
-    
+
     # Extract the variable names for A and B
     A_name = [name for name, value in arg_info.locals.items() if value is A][0]
     B_name = [name for name, value in arg_info.locals.items() if value is B][0]
@@ -65,8 +69,10 @@ def interval_intersection(A: List[List[float]], B: List[List[float]]) -> np.ndar
     Computes the intersection of two sets of intervals.
 
     Parameters:
-        A (List[List[float]]): A list of intervals, where each interval is represented as a list of two integers [start, stop].
-        B (List[List[float]]): A list of intervals, where each interval is represented as a list of two integers [start, stop].
+        A (List[List[float]]): A list of intervals, where each interval is represented as a list of
+            two integers [start, stop].
+        B (List[List[float]]): A list of intervals, where each interval is represented as a list of
+            two integers [start, stop].
 
     Returns:
         np.ndarray: An array of intervals that represent the intersections between A and B.
@@ -85,7 +91,7 @@ def interval_intersection(A: List[List[float]], B: List[List[float]]) -> np.ndar
         if (
             a_start <= b_end
             and b_start <= a_end
-            and max(a_start, b_start) != min(a_end, b_end) # Infinitesimal overlap handling
+            and max(a_start, b_start) != min(a_end, b_end)  # Infinitesimal overlap handling
         ):  # Overlapping intervals
             result.append([max(a_start, b_start), min(a_end, b_end)])
 
@@ -171,6 +177,55 @@ class TestIntervalIntersection(unittest.TestCase):
         result = interval_intersection(A, B)
         expected = np.array([])
         np.testing.assert_array_equal(result, expected)
+
+
+def fractional_overlap(
+    obs_start: datetime,
+    obs_end: datetime,
+    flare_start: datetime,
+    flare_peak: datetime,
+    flare_end: datetime,
+) -> tuple:
+    """
+    Calculate the fractional overlap between an observation period and a flare period.
+
+    Parameters:
+        obs_start: Start time of observation period
+        obs_end: End time of observation period
+        flare_start: Start time of flare
+        flare_end: End time of flare
+        flare_peak: Peak time of flare
+
+    Returns:
+        tuple: (frac_obs, frac_obs_rise, frac_obs_fall)
+               frac_obs: Fractional overlap (0 to 1) relative to the flare duration
+               frac_obs_rise: Fractional overlap during the rise phase (start to peak)
+               frac_obs_fall: Fractional overlap during the fall phase (peak to end)
+    """
+    if not (flare_start < flare_peak < flare_end):
+        raise ValueError("flare_start < flare_peak < flare_end must be true")
+
+    overlap_start = max(obs_start, flare_start)
+    overlap_end = min(obs_end, flare_end)
+
+    overlap_duration = max(timedelta(0), overlap_end - overlap_start)
+    flare_duration = flare_end - flare_start
+    rise_duration = flare_peak - flare_start
+    fall_duration = flare_end - flare_peak
+
+    frac_obs = overlap_duration / flare_duration
+    frac_obs_rise = (
+        max(timedelta(0), min(overlap_end, flare_peak) - overlap_start) / rise_duration
+        if rise_duration > timedelta(0)
+        else 0.0
+    )
+    frac_obs_fall = (
+        max(timedelta(0), overlap_end - max(overlap_start, flare_peak)) / fall_duration
+        if fall_duration > timedelta(0)
+        else 0.0
+    )
+
+    return frac_obs, frac_obs_rise, frac_obs_fall
 
 
 if __name__ == "__main__":
