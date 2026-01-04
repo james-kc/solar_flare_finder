@@ -50,41 +50,6 @@ FLARES_TABLE = "flares"
 INSTRUMENT_OBS_TABLE = "instrument_observations"
 
 
-################
-# FLARES TABLE #
-################
-
-FLARES_COLUMNS: List[str] = [
-    "id",
-    "flare_start",
-    "flare_peak",
-    "flare_end",
-    "class",
-    "class_letter",
-    "class_mag",
-    "noaa_ar",
-    "loc",
-    "aia_xcen",
-    "aia_ycen",
-]
-
-
-#################################
-# INSTRUMENT OBSERVATIONS TABLE #
-#################################
-
-INSTRUMENT_OBS_COLUMNS: List[str] = [
-    "id",
-    "flare_id",
-    "instrument",
-    "observed",
-    "flare_flag",
-    "frac_obs",
-    "frac_obs_rise",
-    "frac_obs_fall",
-]
-
-
 ############################
 # INSTRUMENT SPECIFICATION #
 ############################

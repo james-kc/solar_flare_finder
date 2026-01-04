@@ -16,6 +16,7 @@ dependencies = [
     "sunpy[net]",
     "fastapi",
     "uvicorn",
+    "sqlalchemy>=2.0",
 ]
 
 [project.optional-dependencies]
