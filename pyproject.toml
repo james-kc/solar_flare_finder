@@ -29,6 +29,11 @@ dev = [
     "sphinx-rtd-theme",
     "sunpy[all]",
 ]
+doc = [
+    "sphinx",
+    "sphinx-rtd-theme",
+    "sphinx_rtd_dark_mode",
+]
 
 [project.scripts]
 solar-flare-finder = "solar_flare_finder.cli:main"
